@@ -1,8 +1,8 @@
 module Database.Hitcask.Put where
 import Database.Hitcask.Types
+import Database.Hitcask.Timestamp
 import Data.ByteString(ByteString)
 import qualified Data.ByteString.Char8 as B
-import Data.Time.Clock.POSIX
 import Control.Concurrent.STM
 import System.IO
 import qualified Data.HashMap.Strict as M
@@ -10,19 +10,22 @@ import Data.Serialize.Put
 import Data.Digest.CRC32
 
 put :: Hitcask -> ByteString -> ByteString -> IO Hitcask
-put h@(Hitcask t f filename) key value = do
+put h@(Hitcask _ f filename) key value = do
   currentPosition <- hTell f
-  time <- getPOSIXTime
+  time <- currentTimestamp
   let valueLocation = formatValue filename value currentPosition time
-  b <- atomically $ do
-    modifyTVar' t $ \m ->
-      M.insert key valueLocation m
-    return $! h
+  b <- updateKeyDir h key valueLocation
   appendToLog f key value valueLocation
   return $! b
 
-formatValue :: FilePath -> ByteString -> Integer -> POSIXTime -> ValueLocation
-formatValue filePath value filePos t = ValueLocation filePath (B.length value) filePos (round t)
+updateKeyDir :: Hitcask -> ByteString -> ValueLocation -> IO Hitcask
+updateKeyDir h@(Hitcask t _ _) key valueLocation = atomically $ do
+    modifyTVar' t $ \m ->
+      M.insert key valueLocation m
+    return $! h
+
+formatValue :: FilePath -> ByteString -> Integer -> Integer -> ValueLocation
+formatValue filePath value = ValueLocation filePath (B.length value)
 
 appendToLog :: Handle -> ByteString -> ByteString -> ValueLocation -> IO ()
 appendToLog h key value (ValueLocation _ _ _ t) = do

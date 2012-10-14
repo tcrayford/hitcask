@@ -74,5 +74,3 @@ main = hspec $
         close db
         n @?= Nothing
 
--- deletion persists across sessions
--- extract out withTempDB
