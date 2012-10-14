@@ -5,6 +5,9 @@ import qualified Data.HashMap.Strict as M
 import Data.ByteString(ByteString)
 import qualified Data.ByteString.Char8 as B
 import Data.Serialize.Get
+import Control.Monad(when)
+import Data.Digest.CRC32
+import Data.Word(Word32)
 
 restoreFromFile :: FilePath -> IO KeyDir
 restoreFromFile f = do
@@ -26,13 +29,18 @@ runParser input g = case runGet g input of
 readLogEntry :: FilePath -> Int -> Get (ByteString, ValueLocation)
 readLogEntry f startingSize = do
   r <- remaining
-  _ <- getWord32be --crc
+  crc <- getWord32be --crc
   tstamp <- getWord32be
   keySize <- getWord32be
   vSize <- getWord32be
   key <- getByteString $ fromIntegral keySize
-  _ <- getByteString $ fromIntegral vSize
+  value <- getByteString $ fromIntegral vSize
+  checkValue value crc
   return (key, ValueLocation f (fromIntegral vSize) (fromIntegral (startingSize - r)) (fromIntegral tstamp))
+
+checkValue :: (Monad m) => ByteString -> Word32 -> m ()
+checkValue v crc = when (crc32 v /= crc)
+  (fail $ "value failed crc check: " ++ show v)
 
 untilM :: (Monad m) => m Bool -> m a -> m [a]
 untilM f action = go []
