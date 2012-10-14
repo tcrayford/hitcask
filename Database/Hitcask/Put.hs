@@ -25,7 +25,9 @@ formatValue :: FilePath -> ByteString -> Integer -> POSIXTime -> ValueLocation
 formatValue filePath value filePos t = ValueLocation filePath (B.length value) filePos (round t)
 
 appendToLog :: Handle -> ByteString -> ByteString -> ValueLocation -> IO ()
-appendToLog h key value (ValueLocation _ _ _ t) = B.hPut h (formatForLog key value t)
+appendToLog h key value (ValueLocation _ _ _ t) = do
+   hSeek h SeekFromEnd 0
+   B.hPut h (formatForLog key value t)
 
 putInt32 ::  Integral a => a -> Put
 putInt32 a = putWord32be $ fromIntegral a

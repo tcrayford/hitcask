@@ -14,7 +14,7 @@ restoreFromFile f = do
       wholeFile <- B.readFile f
       let r = runParser wholeFile $
                 untilM isEmpty (readLogEntry f (B.length wholeFile))
-      return $! M.fromList r
+      return $! M.fromList (reverse r)
     else
       return $! M.empty
 
@@ -41,6 +41,6 @@ untilM f action = go []
                 if not x
                   then do
                     y <- action
-                    return $! y:xs
+                    go (y:xs)
                   else return $! xs
 

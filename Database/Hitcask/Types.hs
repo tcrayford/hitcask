@@ -9,7 +9,7 @@ data ValueLocation = ValueLocation {
     , valueSize :: Int
     , valuePos :: Integer
     , timestamp :: Integer
-  }
+  } deriving (Eq, Show)
 
 type KeyDir = M.HashMap ByteString ValueLocation
 

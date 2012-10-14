@@ -22,6 +22,7 @@ connect dir = do
   m <- restoreFromFile filepath
   h <- openFile filepath ReadWriteMode
   t <- newTVarIO $! m
+  hSetBuffering h NoBuffering
   return $! Hitcask t h filepath
 
 close :: Hitcask -> IO ()

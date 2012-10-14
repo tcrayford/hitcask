@@ -41,12 +41,36 @@ main = hspec $
         close db
         n @?= Nothing
 
-    describe "deleting keys" $
-      it "returns nothing if the key is deleted" $ do
+      it "persists and restores multiple keys" $ do
         db <- createEmpty "/tmp/hitcask/db04"
+        put db "key" "value"
+        put db "key2" "value2"
+        close db
+        db2 <- connect "/tmp/hitcask/db04"
+        (Just v) <- get db2 "key"
+        (Just v2) <- get db2 "key2"
+        close db2
+        close db2
+        v @?= "value"
+        v2 @?= "value2"
+
+
+    describe "deleting keys" $ do
+      it "returns nothing if the key is deleted" $ do
+        db <- createEmpty "/tmp/hitcask/db05"
         put db "key" "value"
         delete db "key"
         n <- get db "key"
+        close db
+        n @?= Nothing
+
+      it "deletion persists accross sessions" $ do
+        db <- createEmpty "/tmp/hitcask/db06"
+        put db "key" "value"
+        delete db "key"
+        close db
+        db2 <- connect "/tmp/hitcask/db06"
+        n <- get db2 "key"
         close db
         n @?= Nothing
 
