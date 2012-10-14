@@ -23,16 +23,6 @@ runParser input g = case runGet g input of
   Right r -> r
   Left e -> error e
 
-untilM :: (Monad m) => m Bool -> m a -> m [a]
-untilM f action = go []
-  where go xs = do
-                x <- f
-                if not x
-                  then do
-                    y <- action
-                    return $! y:xs
-                  else return $! xs
-
 readLogEntry :: FilePath -> Int -> Get (ByteString, ValueLocation)
 readLogEntry f startingSize = do
   r <- remaining
@@ -43,4 +33,14 @@ readLogEntry f startingSize = do
   key <- getByteString $ fromIntegral keySize
   _ <- getByteString $ fromIntegral vSize
   return (key, ValueLocation f (fromIntegral vSize) (fromIntegral (startingSize - r)) (fromIntegral tstamp))
+
+untilM :: (Monad m) => m Bool -> m a -> m [a]
+untilM f action = go []
+  where go xs = do
+                x <- f
+                if not x
+                  then do
+                    y <- action
+                    return $! y:xs
+                  else return $! xs
 

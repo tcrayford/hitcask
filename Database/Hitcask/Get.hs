@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Database.Hitcask.Get where
 import Database.Hitcask.Types
 import Data.ByteString(ByteString)
@@ -5,9 +6,20 @@ import Control.Concurrent.STM
 import qualified Data.HashMap.Strict as M
 import System.IO
 import qualified Data.ByteString.Char8 as B
+import Control.Monad(liftM)
 
 get :: Hitcask -> ByteString -> IO (Maybe ByteString)
-get h@(Hitcask t _ _) key = do
+get h key = liftM removeDeletion $ readValue h key
+
+removeDeletion :: Maybe ByteString -> Maybe ByteString
+removeDeletion j@(Just v)
+  | v == "<<hitcask_tombstone>>" = Nothing
+  | otherwise = j
+removeDeletion x = x
+
+
+readValue :: Hitcask -> ByteString -> IO (Maybe ByteString)
+readValue h@(Hitcask t _ _) key = do
   m <- readTVarIO t
   let loc = M.lookup key m
   case loc of

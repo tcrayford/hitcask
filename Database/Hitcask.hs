@@ -1,6 +1,7 @@
 module Database.Hitcask(
     get
   , put
+  , delete
   , Hitcask()
   , connect
   , close
@@ -12,6 +13,7 @@ import Database.Hitcask.Types
 import Database.Hitcask.Restore
 import Database.Hitcask.Get
 import Database.Hitcask.Put
+import Database.Hitcask.Delete
 
 connect :: String -> IO Hitcask
 connect dir = do
