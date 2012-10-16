@@ -10,7 +10,7 @@ import Data.Serialize.Put
 import Data.Digest.CRC32
 
 put :: Hitcask -> ByteString -> ByteString -> IO Hitcask
-put h@(Hitcask _ f filename) key value = do
+put h@(Hitcask _ (CurrentLogFile f filename)) key value = do
   currentPosition <- hTell f
   time <- currentTimestamp
   let valueLocation = formatValue filename value currentPosition time
@@ -19,7 +19,7 @@ put h@(Hitcask _ f filename) key value = do
   return $! b
 
 updateKeyDir :: Hitcask -> ByteString -> ValueLocation -> IO Hitcask
-updateKeyDir h@(Hitcask t _ _) key valueLocation = atomically $ do
+updateKeyDir h@(Hitcask t _) key valueLocation = atomically $ do
     modifyTVar' t $ \m ->
       M.insert key valueLocation m
     return $! h

@@ -13,9 +13,13 @@ data ValueLocation = ValueLocation {
 
 type KeyDir = M.HashMap ByteString ValueLocation
 
+data CurrentLogFile = CurrentLogFile Handle FilePath
+
 data Hitcask = Hitcask {
     keys :: TVar KeyDir
-  , currentFile :: Handle
-  , fileLocation :: FilePath
+  , current :: CurrentLogFile
   }
+
+getHandle :: Hitcask -> Handle
+getHandle (Hitcask _ (CurrentLogFile h _)) = h
 

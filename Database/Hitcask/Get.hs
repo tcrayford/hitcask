@@ -19,7 +19,7 @@ removeDeletion x = x
 
 
 readValue :: Hitcask -> ByteString -> IO (Maybe ByteString)
-readValue h@(Hitcask t _ _) key = do
+readValue h@(Hitcask t _) key = do
   m <- readTVarIO t
   let loc = M.lookup key m
   case loc of
@@ -27,7 +27,7 @@ readValue h@(Hitcask t _ _) key = do
     Nothing -> return Nothing
 
 readFromLocation :: Hitcask -> ValueLocation -> ByteString -> IO (Maybe ByteString)
-readFromLocation (Hitcask _ h _) (ValueLocation _ s p _) key = do
+readFromLocation (Hitcask _ (CurrentLogFile h _)) (ValueLocation _ s p _) key = do
   hSeek h AbsoluteSeek p
   b <- B.hGet h (s + (4 * 4) + B.length key)
   return $! Just $! B.drop ((4 * 4) + B.length key) b

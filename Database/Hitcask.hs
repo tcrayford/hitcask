@@ -22,8 +22,8 @@ connect dir = do
   m <- restoreFromFile filepath
   h <- openFile filepath ReadWriteMode
   t <- newTVarIO $! m
-  return $! Hitcask t h filepath
+  return $! Hitcask t $ CurrentLogFile h filepath
 
 close :: Hitcask -> IO ()
-close (Hitcask _ h _) = hClose h
+close h = hClose (getHandle h)
 
