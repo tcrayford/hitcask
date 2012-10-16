@@ -26,7 +26,7 @@ runParser input g = case runGet g input of
   Right r -> r
   Left e -> error e
 
-readLogEntry :: FilePath -> Int -> Get (ByteString, ValueLocation)
+readLogEntry :: FilePath -> Int -> Get (Key, ValueLocation)
 readLogEntry f startingSize = do
   r <- remaining
   crc <- getWord32be --crc
@@ -38,7 +38,7 @@ readLogEntry f startingSize = do
   checkValue value crc
   return (key, ValueLocation f (fromIntegral vSize) (fromIntegral (startingSize - r)) (fromIntegral tstamp))
 
-checkValue :: (Monad m) => ByteString -> Word32 -> m ()
+checkValue :: (Monad m) => Value -> Word32 -> m ()
 checkValue v crc = when (crc32 v /= crc)
   (fail $ "value failed crc check: " ++ show v)
 

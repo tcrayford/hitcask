@@ -20,6 +20,9 @@ data Hitcask = Hitcask {
   , current :: CurrentLogFile
   }
 
+type Key = ByteString
+type Value = ByteString
+
 getHandle :: Hitcask -> Handle
 getHandle (Hitcask _ (CurrentLogFile h _)) = h
 

@@ -15,7 +15,7 @@ import Database.Hitcask.Get
 import Database.Hitcask.Put
 import Database.Hitcask.Delete
 
-connect :: String -> IO Hitcask
+connect :: FilePath -> IO Hitcask
 connect dir = do
   createDirectoryIfMissing True dir
   let filepath = dir ++ "/current"
