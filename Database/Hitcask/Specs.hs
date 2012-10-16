@@ -74,3 +74,8 @@ main = hspec $
         close db
         n @?= Nothing
 
+-- file rotation
+-- merging
+-- key listing
+-- folding
+-- forcing writes to disk
