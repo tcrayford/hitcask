@@ -11,6 +11,7 @@ import Data.Digest.CRC32
 
 put :: Hitcask -> Key -> Value -> IO Hitcask
 put h@(Hitcask _ (CurrentLogFile f filename)) key value = do
+  hSeek f SeekFromEnd 0
   currentPosition <- hTell f
   time <- currentTimestamp
   let valueLocation = formatValue filename value currentPosition time
@@ -28,9 +29,7 @@ formatValue :: FilePath -> Value -> Integer -> Integer -> ValueLocation
 formatValue filePath value = ValueLocation filePath (B.length value)
 
 appendToLog :: Handle -> Key -> Value -> ValueLocation -> IO ()
-appendToLog h key value (ValueLocation _ _ _ t) = do
-   hSeek h SeekFromEnd 0
-   B.hPut h (formatForLog key value t)
+appendToLog h key value (ValueLocation _ _ _ t) = B.hPut h (formatForLog key value t)
 
 putInt32 ::  Integral a => a -> Put
 putInt32 a = putWord32be $ fromIntegral a

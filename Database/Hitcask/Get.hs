@@ -17,15 +17,15 @@ removeDeletion j@(Just v)
 removeDeletion x = x
 
 readValue :: Hitcask -> Key -> IO (Maybe Value)
-readValue h@(Hitcask t _) key = do
+readValue (Hitcask t currentLog) key = do
   m <- readTVarIO t
   let loc = M.lookup key m
   case loc of
-    Just l -> readFromLocation h l key
+    Just l -> readFromLocation currentLog l key
     Nothing -> return Nothing
 
-readFromLocation :: Hitcask -> ValueLocation -> Key -> IO (Maybe Value)
-readFromLocation (Hitcask _ (CurrentLogFile h _)) (ValueLocation _ s p _) key = do
+readFromLocation :: CurrentLogFile -> ValueLocation -> Key -> IO (Maybe Value)
+readFromLocation (CurrentLogFile h _) (ValueLocation _ s p _) key = do
   hSeek h AbsoluteSeek p
   b <- B.hGet h (s + (4 * 4) + B.length key)
   return $! Just $! B.drop ((4 * 4) + B.length key) b
