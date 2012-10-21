@@ -19,9 +19,10 @@ removeDeletion x = x
 readValue :: Hitcask -> Key -> IO (Maybe Value)
 readValue h key = do
   m <- readTVarIO (keys h)
+  c <- atomically $ readTVar (current h)
   let loc = M.lookup key m
   case loc of
-    Just l -> readFromLocation (current h) l key
+    Just l -> readFromLocation c l key
     Nothing -> return Nothing
 
 readFromLocation :: LogFile -> ValueLocation -> Key -> IO (Maybe Value)

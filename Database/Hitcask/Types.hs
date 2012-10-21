@@ -22,13 +22,14 @@ type CurrentLogFile = LogFile
 
 data Hitcask = Hitcask {
     keys :: TVar KeyDir
-  , current :: CurrentLogFile
-  , files :: [LogFile]
+  , current :: TVar CurrentLogFile
+  , files :: TVar [LogFile]
   }
 
 type Key = ByteString
 type Value = ByteString
 
-getHandle :: Hitcask -> Handle
-getHandle (Hitcask _ (LogFile h _) _) = h
-
+getHandle :: Hitcask -> IO Handle
+getHandle (Hitcask _ c _) = do
+  (LogFile h _) <- atomically $ readTVar c
+  return $! h

@@ -21,9 +21,10 @@ connect dir = do
   createDirectoryIfMissing True dir
   m <- restoreFromLogDir dir
   logs <- openLogFiles dir
-  h <- getOrCreateCurrent dir logs
+  h <- getOrCreateCurrent dir logs >>= newTVarIO
   t <- newTVarIO $! m
-  return $! Hitcask t h logs
+  l <- newTVarIO $! logs
+  return $! Hitcask t h l
 
 getOrCreateCurrent :: FilePath -> [LogFile] -> IO LogFile
 getOrCreateCurrent dir logs
@@ -31,5 +32,5 @@ getOrCreateCurrent dir logs
   | otherwise = return $! head logs
 
 close :: Hitcask -> IO ()
-close h = hClose (getHandle h)
+close h = getHandle h >>= hClose
 

@@ -11,11 +11,12 @@ import Data.Digest.CRC32
 
 put :: Hitcask -> Key -> Value -> IO Hitcask
 put h key value = do
-  let f = getHandle h
+  f <- getHandle h
   hSeek f SeekFromEnd 0
   currentPosition <- hTell f
   time <- currentTimestamp
-  let valueLocation = formatValue (path $ current h) value currentPosition time
+  c <- readTVarIO $ current h
+  let valueLocation = formatValue (path c) value currentPosition time
   b <- updateKeyDir h key valueLocation
   appendToLog f key value valueLocation
   return $! b
