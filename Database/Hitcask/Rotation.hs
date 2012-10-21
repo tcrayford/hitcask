@@ -7,7 +7,7 @@ import Control.Concurrent.STM
 maybeRotateCurrentFile :: Hitcask -> IO Hitcask
 maybeRotateCurrentFile h = do
   currentSize <- currentLogSize h
-  if currentSize > 2048
+  if currentSize > 5
     then rotateLogFile h
     else return $! h
 

@@ -2,7 +2,7 @@
 
 main () {
   runghc ./Database/Hitcask/Specs.hs
-  #ghc --make -prof -fprof-auto-calls -rtsopts ./Database/Hitcask/Specs.hs
+  #ghc --make -prof -fprof-auto-calls -rtsopts ./Database/Hitcask/Specs.hs &&
   #./Database/Hitcask/Specs +RTS -xc
 }
 

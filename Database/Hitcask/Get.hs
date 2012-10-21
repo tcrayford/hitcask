@@ -19,14 +19,27 @@ removeDeletion x = x
 readValue :: Hitcask -> Key -> IO (Maybe Value)
 readValue h key = do
   m <- readTVarIO (keys h)
-  c <- atomically $ readTVar (current h)
   let loc = M.lookup key m
   case loc of
-    Just l -> readFromLocation c l key
+    Just l -> readFromLocation h l key
     Nothing -> return Nothing
 
-readFromLocation :: LogFile -> ValueLocation -> Key -> IO (Maybe Value)
-readFromLocation (LogFile h _) (ValueLocation _ s p _) key = do
+logForValueLocation :: [LogFile] -> ValueLocation -> Maybe LogFile
+logForValueLocation ls (ValueLocation file _ _ _)
+  | null found = Nothing
+  | otherwise = Just $ head found
+  where found = filter ((== file) . path) ls
+
+readFromLocation :: Hitcask -> ValueLocation -> Key -> IO (Maybe Value)
+readFromLocation c v key = do
+  f <- readTVarIO $ files c
+  let l = logForValueLocation f v
+  case l of
+    (Just (LogFile h _)) -> readFromLogFile h v key
+    Nothing -> return Nothing
+
+readFromLogFile :: Handle -> ValueLocation -> Key -> IO (Maybe Value)
+readFromLogFile h (ValueLocation _ s p _) key = do
   hSeek h AbsoluteSeek p
   b <- B.hGet h (s + (4 * 4) + B.length key)
   return $! Just $! B.drop ((4 * 4) + B.length key) b

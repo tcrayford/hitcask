@@ -52,7 +52,6 @@ main = hspec $ do
         (Just v) <- get db2 "key"
         (Just v2) <- get db2 "key2"
         close db2
-        close db2
         v @?= "value"
         v2 @?= "value2"
 
@@ -79,7 +78,10 @@ main = hspec $ do
 openingLogFileSpecs :: Spec
 openingLogFileSpecs = describe "getTimestamp" $
   it "gets the timestamp from a hitcask filename" $
-    1234 @?= getTimestamp "1234.hitcask.data"
+    12345678 @?= getTimestamp "12345678.hitcask.data"
+
+  -- the one with the largest timestamp should be the first one
+
 
 -- merging
 -- key listing

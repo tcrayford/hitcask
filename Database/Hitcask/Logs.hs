@@ -15,8 +15,8 @@ logFilesInDir dir = do
 mostRecent :: FilePath -> FilePath -> Ordering
 mostRecent = comparing getTimestamp
 
-getTimestamp :: FilePath -> Int
-getTimestamp = read . head . splitOn "."
+getTimestamp :: FilePath -> Integer
+getTimestamp = read . head . splitOn "." . last . splitOn "/"
 
 openLogFiles :: FilePath -> IO [LogFile]
 openLogFiles dir = do

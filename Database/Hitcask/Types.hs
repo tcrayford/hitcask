@@ -11,12 +11,15 @@ data ValueLocation = ValueLocation {
     , timestamp :: Integer
   } deriving (Eq, Show)
 
-type KeyDir = M.HashMap ByteString ValueLocation
+type KeyDir = M.HashMap Key ValueLocation
 
 data LogFile = LogFile {
     handle :: Handle
   , path :: FilePath
   }
+
+instance Show LogFile where
+  show l = "(LogFile" ++  path l ++ ")"
 
 type CurrentLogFile = LogFile
 
