@@ -13,7 +13,7 @@ restoreFromLogDir :: FilePath -> IO KeyDir
 restoreFromLogDir dir = do
   logs <- openLogFiles dir
   restored <- mapM restoreFromFile logs
-  return $! M.unions (reverse restored)
+  return $! M.unions restored
 
 restoreFromFile :: LogFile -> IO KeyDir
 restoreFromFile f = do

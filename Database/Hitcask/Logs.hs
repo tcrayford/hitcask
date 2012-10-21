@@ -10,10 +10,18 @@ import Database.Hitcask.Timestamp
 logFilesInDir :: FilePath -> IO [FilePath]
 logFilesInDir dir = do
   (matched, _) <- globDir [compile "*.hitcask.data"] dir
-  return $! sortBy mostRecent (concat matched)
+  return $! byRecent (concat matched)
+
+byRecent :: [FilePath] -> [FilePath]
+byRecent = sortBy mostRecent
 
 mostRecent :: FilePath -> FilePath -> Ordering
-mostRecent = comparing getTimestamp
+mostRecent a b = descending $ comparing getTimestamp a b
+
+descending :: Ordering -> Ordering
+descending EQ = EQ
+descending GT = LT
+descending LT = GT
 
 getTimestamp :: FilePath -> Integer
 getTimestamp = read . head . splitOn "." . last . splitOn "/"

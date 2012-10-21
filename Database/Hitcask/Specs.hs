@@ -76,11 +76,12 @@ main = hspec $ do
         n @?= Nothing
 
 openingLogFileSpecs :: Spec
-openingLogFileSpecs = describe "getTimestamp" $
+openingLogFileSpecs = describe "getTimestamp" $ do
   it "gets the timestamp from a hitcask filename" $
     12345678 @?= getTimestamp "12345678.hitcask.data"
 
-  -- the one with the largest timestamp should be the first one
+  it "the largest timestamp comes first" $
+    head (byRecent ["12345.hitcask.data", "0.hitcask.data"]) @?= "12345.hitcask.data"
 
 
 -- merging
