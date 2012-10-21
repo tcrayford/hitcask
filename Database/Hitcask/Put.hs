@@ -1,6 +1,7 @@
 module Database.Hitcask.Put where
 import Database.Hitcask.Types
 import Database.Hitcask.Timestamp
+import Database.Hitcask.Rotation
 import Data.ByteString(ByteString)
 import qualified Data.ByteString.Char8 as B
 import Control.Concurrent.STM
@@ -11,6 +12,7 @@ import Data.Digest.CRC32
 
 put :: Hitcask -> Key -> Value -> IO Hitcask
 put h key value = do
+  maybeRotateCurrentFile h
   f <- getHandle h
   hSeek f SeekFromEnd 0
   currentPosition <- hTell f

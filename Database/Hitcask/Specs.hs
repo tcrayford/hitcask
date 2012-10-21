@@ -81,7 +81,6 @@ openingLogFileSpecs = describe "getTimestamp" $
   it "gets the timestamp from a hitcask filename" $
     1234 @?= getTimestamp "1234.hitcask.data"
 
--- file rotation
 -- merging
 -- key listing
 -- folding

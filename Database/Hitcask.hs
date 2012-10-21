@@ -24,7 +24,7 @@ connect dir = do
   h <- getOrCreateCurrent dir logs >>= newTVarIO
   t <- newTVarIO $! m
   l <- newTVarIO $! logs
-  return $! Hitcask t h l
+  return $! Hitcask t h l dir
 
 getOrCreateCurrent :: FilePath -> [LogFile] -> IO LogFile
 getOrCreateCurrent dir logs
