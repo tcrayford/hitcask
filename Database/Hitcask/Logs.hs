@@ -5,6 +5,7 @@ import Data.List(sortBy)
 import Data.List.Split(splitOn)
 import Data.Ord(comparing)
 import System.IO
+import Database.Hitcask.Timestamp
 
 logFilesInDir :: FilePath -> IO [FilePath]
 logFilesInDir dir = do
@@ -27,4 +28,8 @@ openLogFile filepath = do
   h <- openFile filepath ReadWriteMode
   return $! LogFile h filepath
 
+createNewLog :: FilePath -> IO LogFile
+createNewLog dir = do
+    t <- currentTimestamp
+    openLogFile (dir ++ "/" ++ show t ++ ".hitcask.data")
 

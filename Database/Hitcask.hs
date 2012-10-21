@@ -15,7 +15,6 @@ import Database.Hitcask.Get
 import Database.Hitcask.Put
 import Database.Hitcask.Delete
 import Database.Hitcask.Logs
-import Database.Hitcask.Timestamp
 
 connect :: FilePath -> IO Hitcask
 connect dir = do
@@ -27,11 +26,9 @@ connect dir = do
   return $! Hitcask t h logs
 
 getOrCreateCurrent :: FilePath -> [LogFile] -> IO LogFile
-getOrCreateCurrent dir logs = do
-    t <- currentTimestamp
-    if null logs
-      then openLogFile (dir ++ "/" ++ show t ++ ".hitcask.data")
-      else return $! head logs
+getOrCreateCurrent dir logs
+  | null logs = createNewLog dir
+  | otherwise = return $! head logs
 
 close :: Hitcask -> IO ()
 close h = hClose (getHandle h)
