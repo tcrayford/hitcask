@@ -4,6 +4,7 @@ import Test.Hspec.HUnit()
 import Test.HUnit
 import System.Directory
 import Database.Hitcask
+import Database.Hitcask.Logs
 import Control.Monad(when)
 
 whenM :: (Monad m) => m Bool -> m () -> m ()
@@ -16,7 +17,8 @@ createEmpty dir = do
   connect dir
 
 main :: IO ()
-main = hspec $
+main = hspec $ do
+  openingLogFileSpecs
   describe "hitcask" $ do
     describe "get and put" $ do
       it "returns the value set as the key" $ do
@@ -73,6 +75,11 @@ main = hspec $
         n <- get db2 "key"
         close db
         n @?= Nothing
+
+openingLogFileSpecs :: Spec
+openingLogFileSpecs = describe "getTimestamp" $
+  it "gets the timestamp from a hitcask filename" $
+    1234 @?= getTimestamp "1234.hitcask.data"
 
 -- file rotation
 -- merging

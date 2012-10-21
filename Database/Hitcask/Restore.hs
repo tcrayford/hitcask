@@ -1,6 +1,5 @@
 module Database.Hitcask.Restore where
 import Database.Hitcask.Types
-import System.Directory
 import qualified Data.HashMap.Strict as M
 import Data.ByteString(ByteString)
 import qualified Data.ByteString.Char8 as B
@@ -9,17 +8,12 @@ import Control.Monad(when)
 import Data.Digest.CRC32
 import Data.Word(Word32)
 
-restoreFromFile :: FilePath -> IO KeyDir
+restoreFromFile :: LogFile -> IO KeyDir
 restoreFromFile f = do
-  exists <- doesFileExist f
-  if exists
-    then do
-      wholeFile <- B.readFile f
-      let r = runParser wholeFile $
-                untilM isEmpty (readLogEntry f (B.length wholeFile))
-      return $! M.fromList (reverse r)
-    else
-      return $! M.empty
+  wholeFile <- B.hGetContents (handle f)
+  let r = runParser wholeFile $
+            untilM isEmpty (readLogEntry (path f) (B.length wholeFile))
+  return $! M.fromList (reverse r)
 
 runParser :: ByteString -> Get a -> a
 runParser input g = case runGet g input of
