@@ -2,8 +2,14 @@
 
 main () {
   runghc ./Database/Hitcask/Specs.hs
+
+  # for stacktraces
   #ghc --make -prof -fprof-auto-calls -rtsopts ./Database/Hitcask/Specs.hs &&
   #./Database/Hitcask/Specs +RTS -xc
+
+  # with all optimizations
+  #ghc --make -O2 ./Database/Hitcask/Specs.hs &&
+  #./Database/Hitcask/Specs
 }
 
 main
