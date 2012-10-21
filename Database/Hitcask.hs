@@ -15,6 +15,9 @@ import Database.Hitcask.Get
 import Database.Hitcask.Put
 import Database.Hitcask.Delete
 
+openLogFiles :: FilePath -> IO [LogFile]
+openLogFiles _ = return []
+
 connect :: FilePath -> IO Hitcask
 connect dir = do
   createDirectoryIfMissing True dir
@@ -22,7 +25,8 @@ connect dir = do
   m <- restoreFromFile filepath
   h <- openFile filepath ReadWriteMode
   t <- newTVarIO $! m
-  return $! Hitcask t (LogFile h filepath) []
+  logs <- openLogFiles dir
+  return $! Hitcask t (LogFile h filepath) logs
 
 close :: Hitcask -> IO ()
 close h = hClose (getHandle h)
