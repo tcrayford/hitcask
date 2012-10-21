@@ -1,24 +1,19 @@
 {-# LANGUAGE OverloadedStrings #-}
 import Test.Hspec.Monadic
+import Test.Hspec.QuickCheck(prop)
 import Test.Hspec.HUnit()
 import Test.HUnit
-import System.Directory
 import Database.Hitcask
 import Database.Hitcask.Logs
-import Control.Monad(when)
-
-whenM :: (Monad m) => m Bool -> m () -> m ()
-whenM t a = t >>= flip when a
-
-createEmpty :: FilePath -> IO Hitcask
-createEmpty dir = do
-  whenM (doesDirectoryExist dir)
-    (removeDirectoryRecursive dir)
-  connect dir
+import Database.Hitcask.SpecHelper
+import Database.Hitcask.QuickCheck
 
 main :: IO ()
 main = hspec $ do
   openingLogFileSpecs
+  describe "qc" $
+    prop "get retreives what was put" prop_get_retreives_what_was_put
+
   describe "hitcask" $ do
     describe "get and put" $ do
       it "returns the value set as the key" $ do
