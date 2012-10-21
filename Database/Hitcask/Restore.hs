@@ -7,6 +7,13 @@ import Data.Serialize.Get
 import Control.Monad(when)
 import Data.Digest.CRC32
 import Data.Word(Word32)
+import Database.Hitcask.Logs
+
+restoreFromLogDir :: FilePath -> IO KeyDir
+restoreFromLogDir dir = do
+  logs <- openLogFiles dir
+  restored <- mapM restoreFromFile logs
+  return $! M.unions restored
 
 restoreFromFile :: LogFile -> IO KeyDir
 restoreFromFile f = do

@@ -19,17 +19,11 @@ import Database.Hitcask.Logs
 connect :: FilePath -> IO Hitcask
 connect dir = do
   createDirectoryIfMissing True dir
+  m <- restoreFromLogDir dir
   logs <- openLogFiles dir
   h <- getOrCreateCurrent dir logs
-  m <- restoreFromFile h
   t <- newTVarIO $! m
-  curr <- reopen h
-  return $! Hitcask t curr logs
-
-reopen :: LogFile -> IO LogFile
-reopen f = do
-  h <- openFile (path f) ReadWriteMode
-  return $! f { handle = h }
+  return $! Hitcask t h logs
 
 getOrCreateCurrent :: FilePath -> [LogFile] -> IO LogFile
 getOrCreateCurrent dir logs = if null logs
