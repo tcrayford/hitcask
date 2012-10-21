@@ -10,7 +10,8 @@ import Data.Serialize.Put
 import Data.Digest.CRC32
 
 put :: Hitcask -> Key -> Value -> IO Hitcask
-put h@(Hitcask _ (CurrentLogFile f filename)) key value = do
+put h@(Hitcask _ (CurrentLogFile _ filename)) key value = do
+  let f = getHandle h
   hSeek f SeekFromEnd 0
   currentPosition <- hTell f
   time <- currentTimestamp
