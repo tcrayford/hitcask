@@ -13,16 +13,20 @@ data ValueLocation = ValueLocation {
 
 type KeyDir = M.HashMap ByteString ValueLocation
 
-data CurrentLogFile = CurrentLogFile Handle FilePath
+data CurrentLogFile = CurrentLogFile {
+    handle :: Handle
+  , path :: FilePath
+  }
 
 data Hitcask = Hitcask {
     keys :: TVar KeyDir
   , current :: CurrentLogFile
+  , files :: [CurrentLogFile]
   }
 
 type Key = ByteString
 type Value = ByteString
 
 getHandle :: Hitcask -> Handle
-getHandle (Hitcask _ (CurrentLogFile h _)) = h
+getHandle (Hitcask _ (CurrentLogFile h _) _) = h
 

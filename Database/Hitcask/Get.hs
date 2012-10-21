@@ -17,11 +17,11 @@ removeDeletion j@(Just v)
 removeDeletion x = x
 
 readValue :: Hitcask -> Key -> IO (Maybe Value)
-readValue (Hitcask t currentLog) key = do
-  m <- readTVarIO t
+readValue h key = do
+  m <- readTVarIO (keys h)
   let loc = M.lookup key m
   case loc of
-    Just l -> readFromLocation currentLog l key
+    Just l -> readFromLocation (current h) l key
     Nothing -> return Nothing
 
 readFromLocation :: CurrentLogFile -> ValueLocation -> Key -> IO (Maybe Value)
