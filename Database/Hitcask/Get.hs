@@ -24,8 +24,8 @@ readValue h key = do
     Just l -> readFromLocation (current h) l key
     Nothing -> return Nothing
 
-readFromLocation :: CurrentLogFile -> ValueLocation -> Key -> IO (Maybe Value)
-readFromLocation (CurrentLogFile h _) (ValueLocation _ s p _) key = do
+readFromLocation :: LogFile -> ValueLocation -> Key -> IO (Maybe Value)
+readFromLocation (LogFile h _) (ValueLocation _ s p _) key = do
   hSeek h AbsoluteSeek p
   b <- B.hGet h (s + (4 * 4) + B.length key)
   return $! Just $! B.drop ((4 * 4) + B.length key) b
