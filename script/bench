@@ -1,0 +1,10 @@
+#!/bin/bash
+
+main () {
+  # with all optimizations
+  ghc --make -O2 -fforce-recomp ./Database/Hitcask/Benchmarks/Main.hs -o ./Database/Hitcask/bench &&
+    ./Database/Hitcask/bench
+
+}
+
+main
