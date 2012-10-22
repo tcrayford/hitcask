@@ -6,14 +6,10 @@ import Test.HUnit
 import Database.Hitcask
 import Database.Hitcask.Logs
 import Database.Hitcask.SpecHelper
-import Database.Hitcask.QuickCheck
 
 main :: IO ()
 main = hspec $ do
   openingLogFileSpecs
-  describe "qc" $
-    prop "get retreives what was put" prop_get_retreives_what_was_put
-
   describe "hitcask" $ do
     describe "get and put" $ do
       it "returns the value set as the key" $ do
