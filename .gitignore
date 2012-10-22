@@ -2,3 +2,5 @@
 *.o
 Database/Hitcask/Specs
 Database/Hitcask/bench
+Database/Hitcask/profiled
+profiled.prof

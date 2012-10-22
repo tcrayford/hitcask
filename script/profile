@@ -1,0 +1,10 @@
+#!/bin/bash
+
+main () {
+  # with all optimizations
+  ghc --make -O2 -fforce-recomp -auto-all -prof -caf-all -rtsopts ./Database/Hitcask/Profiling/Main.hs -o ./Database/Hitcask/profiled &&
+    ./Database/Hitcask/profiled +RTS -P
+
+}
+
+main

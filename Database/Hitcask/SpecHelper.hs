@@ -12,3 +12,9 @@ createEmpty dir = do
 whenM :: (Monad m) => m Bool -> m () -> m ()
 whenM t a = t >>= flip when a
 
+nTimes :: Int -> IO () -> IO ()
+nTimes 0 a = a
+nTimes n a = do
+  a
+  nTimes (n - 1) a
+
