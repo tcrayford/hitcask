@@ -11,6 +11,14 @@ profiledGet = do
     return ()
   return ()
 
+profiledPut :: IO ()
+profiledPut = do
+  h <- createEmpty "/tmp/hitcask/profiledGet"
+  nTimes 1000 $ do
+    put h "key" "value"
+    return ()
+  return ()
+
 main :: IO ()
-main = profiledGet
+main = profiledPut
 
