@@ -21,6 +21,7 @@ put h key value = do
   let valueLocation = formatValue (path c) value currentPosition time
   b <- updateKeyDir h key valueLocation
   appendToLog f key value valueLocation
+  hFlush f
   return $! b
 
 updateKeyDir :: Hitcask -> Key -> ValueLocation -> IO Hitcask
