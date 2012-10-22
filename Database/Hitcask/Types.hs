@@ -26,7 +26,7 @@ type CurrentLogFile = LogFile
 data Hitcask = Hitcask {
     keys :: TVar KeyDir
   , current :: TVar CurrentLogFile
-  , files :: TVar [LogFile]
+  , files :: TVar (M.HashMap FilePath LogFile)
   , dirPath :: FilePath
   }
 

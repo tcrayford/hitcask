@@ -12,7 +12,7 @@ import Database.Hitcask.Logs
 restoreFromLogDir :: FilePath -> IO KeyDir
 restoreFromLogDir dir = do
   logs <- openLogFiles dir
-  restored <- mapM restoreFromFile logs
+  restored <- mapM restoreFromFile $ M.elems logs
   return $! M.unions restored
 
 restoreFromFile :: LogFile -> IO KeyDir

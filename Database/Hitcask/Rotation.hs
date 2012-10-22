@@ -3,6 +3,7 @@ import Database.Hitcask.Types
 import Database.Hitcask.Logs
 import System.IO
 import Control.Concurrent.STM
+import qualified Data.HashMap.Strict as M
 
 maybeRotateCurrentFile :: Hitcask -> IO Hitcask
 maybeRotateCurrentFile h = do
@@ -18,10 +19,10 @@ currentLogSize h = do
 
 rotateLogFile :: Hitcask -> IO Hitcask
 rotateLogFile h = do
-  l <- createNewLog (dirPath h)
+  l@(LogFile _ p) <- createNewLog (dirPath h)
   atomically $ do
     writeTVar (current h) l
     logs <- readTVar $ files h
-    writeTVar (files h) (l:logs)
+    writeTVar (files h) (M.insert p l logs)
   return $! h
 

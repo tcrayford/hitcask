@@ -6,6 +6,7 @@ import Data.List.Split(splitOn)
 import Data.Ord(comparing)
 import System.IO
 import Database.Hitcask.Timestamp
+import qualified Data.HashMap.Strict as M
 
 logFilesInDir :: FilePath -> IO [FilePath]
 logFilesInDir dir = do
@@ -26,10 +27,11 @@ descending LT = GT
 getTimestamp :: FilePath -> Integer
 getTimestamp = read . head . splitOn "." . last . splitOn "/"
 
-openLogFiles :: FilePath -> IO [LogFile]
+openLogFiles :: FilePath -> IO (M.HashMap FilePath LogFile)
 openLogFiles dir = do
   filenames <- logFilesInDir dir
-  mapM openLogFile filenames
+  logs <- mapM openLogFile filenames
+  return $! M.fromList $ zip filenames logs
 
 openLogFile :: FilePath -> IO LogFile
 openLogFile filepath = do

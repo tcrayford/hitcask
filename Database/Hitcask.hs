@@ -15,27 +15,28 @@ import Database.Hitcask.Get
 import Database.Hitcask.Put
 import Database.Hitcask.Delete
 import Database.Hitcask.Logs
+import qualified Data.HashMap.Strict as M
 
 connect :: FilePath -> IO Hitcask
 connect dir = do
   createDirectoryIfMissing True dir
   m <- restoreFromLogDir dir
   logs <- openLogFiles dir
-  h <- getOrCreateCurrent dir logs
-  let allLogs = if null logs then [h] else logs
+  h@(LogFile _ p) <- getOrCreateCurrent dir logs
+  let allLogs = if M.null logs then M.fromList [(p, h)] else logs
   t <- newTVarIO $! m
   l <- newTVarIO $! allLogs
   curr <- newTVarIO h
   return $! Hitcask t curr l dir
 
-getOrCreateCurrent :: FilePath -> [LogFile] -> IO LogFile
+getOrCreateCurrent :: FilePath -> M.HashMap FilePath LogFile -> IO LogFile
 getOrCreateCurrent dir logs
-  | null logs = createNewLog dir
-  | otherwise = return $! head logs
+  | M.null logs = createNewLog dir
+  | otherwise = return $! head (M.elems logs)
 
 close :: Hitcask -> IO ()
 close h = do
   logs <- readTVarIO $ files h
-  mapM_ (hClose . handle) logs
+  mapM_ (hClose . handle) $ M.elems logs
 
 

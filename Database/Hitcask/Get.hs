@@ -24,11 +24,8 @@ readValue h key = do
     Just l -> readFromLocation h l key
     Nothing -> return Nothing
 
-logForValueLocation :: [LogFile] -> ValueLocation -> Maybe LogFile
-logForValueLocation ls (ValueLocation file _ _ _)
-  | null found = Nothing
-  | otherwise = Just $ head found
-  where found = filter ((== file) . path) ls
+logForValueLocation :: M.HashMap FilePath LogFile -> ValueLocation -> Maybe LogFile
+logForValueLocation ls (ValueLocation file _ _ _) = M.lookup file ls
 
 readFromLocation :: Hitcask -> ValueLocation -> Key -> IO (Maybe Value)
 readFromLocation c v key = do
