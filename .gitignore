@@ -1,3 +1,4 @@
 *.hi
 *.o
 Database/Hitcask/Specs
+Database/Hitcask/bench
