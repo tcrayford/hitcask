@@ -1,5 +1,6 @@
 module Database.Hitcask.Put where
 import Database.Hitcask.Types
+import Database.Hitcask.Logs
 import Database.Hitcask.Timestamp
 import Database.Hitcask.Rotation
 import Data.ByteString(ByteString)
@@ -13,16 +14,20 @@ import Data.Digest.CRC32
 put :: Hitcask -> Key -> Value -> IO Hitcask
 put h key value = do
   maybeRotateCurrentFile h
-  f <- getHandle h
+  f <- readTVarIO $ current h
+  valueLocation <- writeValue f key value
+  b <- updateKeyDir h key valueLocation
+  flushLog f
+  return $! b
+
+writeValue :: LogFile -> Key -> Value -> IO ValueLocation
+writeValue l@(LogFile f _) key value = do
   hSeek f SeekFromEnd 0
   currentPosition <- hTell f
   time <- currentTimestamp
-  c <- readTVarIO $ current h
-  let valueLocation = formatValue (path c) value currentPosition time
-  b <- updateKeyDir h key valueLocation
+  let valueLocation = formatValue (path l) value currentPosition time
   appendToLog f key value valueLocation
-  hFlush f
-  return $! b
+  return $! valueLocation
 
 updateKeyDir :: Hitcask -> Key -> ValueLocation -> IO Hitcask
 updateKeyDir h key valueLocation = atomically $ do

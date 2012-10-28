@@ -21,6 +21,9 @@ data LogFile = LogFile {
 instance Show LogFile where
   show l = "(LogFile" ++  path l ++ ")"
 
+instance Eq LogFile where
+  l1 == l2 = path l1 == path l2
+
 type CurrentLogFile = LogFile
 
 data Hitcask = Hitcask {

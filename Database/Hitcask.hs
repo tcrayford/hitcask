@@ -6,7 +6,6 @@ module Database.Hitcask(
   , connect
   , close
   , compact
-  , flush
 ) where
 import Control.Concurrent.STM
 import System.IO
@@ -41,11 +40,4 @@ close :: Hitcask -> IO ()
 close h = do
   logs <- readTVarIO $ files h
   mapM_ (hClose . handle) $ M.elems logs
-
-flush :: Hitcask -> IO ()
-flush h = do
-  logs <- readTVarIO $ files h
-  mapM_ (hFlush . handle) $ M.elems logs
-  c <- readTVarIO $ current h
-  hFlush $ handle c
 

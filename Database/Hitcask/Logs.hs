@@ -43,3 +43,8 @@ createNewLog dir = do
     t <- currentTimestamp
     openLogFile (dir ++ "/" ++ show t ++ ".hitcask.data")
 
+flushLog :: LogFile -> IO ()
+flushLog = hFlush . handle
+
+closeLog :: LogFile -> IO ()
+closeLog = hClose . handle

@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 import Test.Hspec.Monadic
-import Test.Hspec.QuickCheck(prop)
 import Test.Hspec.HUnit()
 import Test.HUnit
+import Test.Hspec.QuickCheck(prop)
 import Control.Concurrent.STM
 import Database.Hitcask
 import Database.Hitcask.Types
@@ -10,10 +10,12 @@ import Database.Hitcask.Get
 import Database.Hitcask.Restore
 import Database.Hitcask.Logs
 import Database.Hitcask.SpecHelper
+import Database.Hitcask.Specs.Compact
 
 main :: IO ()
 main = hspec $ do
   openingLogFileSpecs
+  compactSpecs
   describe "hitcask" $ do
     describe "get and put" $ do
       it "returns the value set as the key" $ do
@@ -69,20 +71,6 @@ main = hspec $ do
         n <- get db2 "key"
         close db
         n @?= Nothing
-
-    describe "compaction" $
-      it "doesn't include any keys to deletions" $ do
-        db <- createEmpty "/tmp/hitcask/db07"
-        put db "key" "value"
-        delete db "key"
-        flush db
-        compact db
-        c <- readTVarIO $ current db
-        ks <- allKeys c
-        close db
-        db2 <- connect "/tmp/hitcask/db07"
-        vals <- readAllVals db2 ks
-        elem (Just "<<hitcask_tombstone>>") vals @?= False
 
 readAllVals :: Hitcask -> [(Key, ValueLocation)] -> IO [Maybe Value]
 readAllVals db = mapM (\(k,v) -> readFromLocation db v k) . reverse

@@ -19,10 +19,14 @@ currentLogSize h = do
 
 rotateLogFile :: Hitcask -> IO Hitcask
 rotateLogFile h = do
-  l@(LogFile _ p) <- createNewLog (dirPath h)
-  atomically $ do
+  l <- createNewLog (dirPath h)
+  swapLogFile h l
+  return $! h
+
+swapLogFile ::  Hitcask -> LogFile -> IO ()
+swapLogFile h l@(LogFile _ p) = atomically $ do
     writeTVar (current h) l
     logs <- readTVar $ files h
     writeTVar (files h) (M.insert p l logs)
-  return $! h
+
 
