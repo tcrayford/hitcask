@@ -4,12 +4,12 @@ main () {
   runghc ./Database/Hitcask/Specs.hs
 
   # for stacktraces
-  #ghc --make -prof -fprof-auto-calls -rtsopts ./Database/Hitcask/Specs.hs &&
-  #./Database/Hitcask/Specs +RTS -xc
+  #ghc --make -prof -fprof-auto-calls -rtsopts ./Database/Hitcask/Specs.hs -o ./Database/Hitcask/tests &&
+  #./Database/Hitcask/tests +RTS -xc
 
   # with all optimizations
-  #ghc --make -O2 ./Database/Hitcask/Specs.hs &&
-  #./Database/Hitcask/Specs
+  #ghc --make -O2 ./Database/Hitcask/Specs.hs -o ./Database/Hitcask/tests &&
+  #./Database/Hitcask/tests
 }
 
 main
