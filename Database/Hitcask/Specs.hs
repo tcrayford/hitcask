@@ -102,5 +102,6 @@ openingLogFileSpecs = describe "getTimestamp" $ do
     head (byRecent ["12345.hitcask.data", "0.hitcask.data"]) @?= "12345.hitcask.data"
 
 
+-- producing hint files
 -- folding
 -- forcing writes to disk
