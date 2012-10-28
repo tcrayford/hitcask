@@ -20,6 +20,12 @@ data LogFile = LogFile {
 
 type HintFile = LogFile
 
+data MergingLog = MergingLog {
+    mergedLog :: LogFile
+  , originalFilePath :: FilePath
+  , hintFile :: HintFile
+  }
+
 instance Show LogFile where
   show l = "(LogFile" ++  path l ++ ")"
 

@@ -2,18 +2,13 @@ module Database.Hitcask.Compact where
 import Database.Hitcask.Types
 import Database.Hitcask.Restore
 import Database.Hitcask.Put
+import Database.Hitcask.Hint
 import Database.Hitcask.Logs
 import Control.Concurrent.STM
 import qualified Data.HashMap.Strict as M
 import System.IO
 import qualified Data.ByteString.Char8 as B
 import Data.Serialize.Get
-
-data MergingLog = MergingLog {
-    mergedLog :: LogFile
-  , originalFilePath :: FilePath
-  , hintFile :: HintFile
-  }
 
 compact :: Hitcask -> IO ()
 compact db = do
@@ -62,8 +57,9 @@ writeMergedContent l ks = do
   return (newLog, M.fromList r)
 
 appendToLog' :: MergingLog -> (Key, Value) -> IO (Key, ValueLocation)
-appendToLog' (MergingLog l _ _) (key, value) = do
+appendToLog' (MergingLog l _ hint) (key, value) = do
   loc <- writeValue l key value
+  writeHint hint key loc
   return (key, loc)
 
 createMergedLog :: LogFile -> IO MergingLog

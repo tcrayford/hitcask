@@ -9,7 +9,9 @@ import Database.Hitcask.Compact
 import Database.Hitcask.SpecHelper
 import Database.Hitcask.Rotation
 import Database.Hitcask.Put
+import Database.Hitcask.Hint
 import Database.Hitcask.Logs
+import Database.Hitcask
 import Database.Hitcask.Restore
 import qualified Data.HashMap.Strict as M
 
@@ -19,6 +21,7 @@ compactSpecs = do
   compactLogFileSpecs
   replaceNonActiveSpecs
   addMergedKeyDirSpecs
+  hintFileSpecs
 
 allNonActiveSpecs :: Spec
 allNonActiveSpecs = describe "allNonActive" $ do
@@ -64,3 +67,15 @@ addMergedKeyDirSpecs = describe "latestWrite" $
         later = base { timestamp = 100000000 }
     latestWrite earlier later @?= later
 
+hintFileSpecs :: Spec
+hintFileSpecs = describe "writing and restoring from hint files" $
+  it "restores the same keydir as read from the log" $ do
+    db <- createEmpty "/tmp/hitcask/db13"
+    c <- readTVarIO $ current db
+    rotateLogFile db
+    m <- createMergedLog c
+    appendToLog' m ("key", "value")
+    original <- restoreFromFile c
+    close db
+    restored <- restoreFromHintFile (hintFile m)
+    restored @?= original
