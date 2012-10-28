@@ -11,15 +11,14 @@ import Data.Serialize.Get
 
 data MergingLog = MergingLog {
     mergedLog :: LogFile
+  , originalFilePath :: FilePath
   }
 
 compact :: Hitcask -> IO ()
 compact db = do
   nonActive <- allNonActive db
   merged <- mapM compactLogFile nonActive
-  replaceNonActive db (map go merged)
-
-  where go (MergingLog l, k) = (l, k)
+  replaceNonActive db merged
 
 allNonActive :: Hitcask -> IO [LogFile]
 allNonActive db = do
@@ -62,12 +61,12 @@ writeMergedContent l ks = do
   return (newLog, M.fromList r)
 
 appendToLog' :: MergingLog -> (Key, Value) -> IO (Key, ValueLocation)
-appendToLog' (MergingLog l) (key, value) = do
+appendToLog' (MergingLog l _) (key, value) = do
   loc <- writeValue l key value
   return (key, loc)
 
 createMergedLog :: LogFile -> IO MergingLog
-createMergedLog (LogFile _ p) = fmap MergingLog $ openLogFile (p ++ ".merged")
+createMergedLog (LogFile _ p) = fmap (flip MergingLog p) $ openLogFile (p ++ ".merged")
 
 getFileContents :: LogFile -> IO B.ByteString
 getFileContents (LogFile h _) = do
@@ -75,13 +74,13 @@ getFileContents (LogFile h _) = do
   hSeek h AbsoluteSeek 0
   B.hGetNonBlocking h (fromIntegral s)
 
-replaceNonActive :: Hitcask -> [(LogFile, KeyDir)] -> IO ()
+replaceNonActive :: Hitcask -> [(MergingLog, KeyDir)] -> IO ()
 replaceNonActive db s = atomically $ mapM_ (swapInLog db) s
 
-swapInLog :: Hitcask -> (LogFile, KeyDir) -> STM ()
-swapInLog db (l@(LogFile _ p), mergedKeys) = do
+swapInLog :: Hitcask -> (MergingLog, KeyDir) -> STM ()
+swapInLog db (MergingLog l original, mergedKeys) = do
   modifyTVar (files db) $ \m ->
-    M.insert (originalFilename p) l m
+    M.insert original l m
   modifyTVar (keys db) $ \m ->
     addMergedKeyDir m mergedKeys
 
@@ -92,7 +91,4 @@ latestWrite :: ValueLocation -> ValueLocation -> ValueLocation
 latestWrite v1 v2
   | timestamp v1 > timestamp v2 = v1
   | otherwise = v2
-
-originalFilename :: FilePath -> FilePath
-originalFilename f = take (length f - length ".merged") f
 

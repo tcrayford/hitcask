@@ -18,7 +18,6 @@ compactSpecs = do
   allNonActiveSpecs
   compactLogFileSpecs
   replaceNonActiveSpecs
-  originalFilenameSpecs
   addMergedKeyDirSpecs
 
 allNonActiveSpecs :: Spec
@@ -52,15 +51,10 @@ replaceNonActiveSpecs = describe "replaceNonActive" $
     db <- createEmpty "/tmp/hitcask/db10"
     c <- readTVarIO $ current db
     rotateLogFile db
-    l <- fmap mergedLog $ createMergedLog c
+    l <- createMergedLog c
     replaceNonActive db [(l, M.empty)]
     nonActive <- allNonActive db
-    head nonActive @?= l
-
-originalFilenameSpecs :: Spec
-originalFilenameSpecs = describe "originalFileName" $
-  it "removes .merged from the end" $
-    originalFilename "foo.merged" @?= "foo"
+    head nonActive @?= mergedLog l
 
 addMergedKeyDirSpecs :: Spec
 addMergedKeyDirSpecs = describe "latestWrite" $
