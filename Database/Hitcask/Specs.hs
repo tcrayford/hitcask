@@ -82,6 +82,14 @@ main = hspec $ do
         close db
         v @?= "value"
 
+    describe "listing keys" $
+      it "lists the available keys" $ do
+        db <- createEmpty "/tmp/hitcask/db12"
+        put db "key" "value"
+        ks <- listKeys db
+        close db
+        ks @?= ["key"]
+
 readAllVals :: Hitcask -> [(Key, ValueLocation)] -> IO [Maybe Value]
 readAllVals db = mapM (\(k,v) -> readFromLocation db v k) . reverse
 
@@ -94,6 +102,5 @@ openingLogFileSpecs = describe "getTimestamp" $ do
     head (byRecent ["12345.hitcask.data", "0.hitcask.data"]) @?= "12345.hitcask.data"
 
 
--- key listing
 -- folding
 -- forcing writes to disk

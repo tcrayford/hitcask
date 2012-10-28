@@ -6,6 +6,7 @@ module Database.Hitcask(
   , connect
   , close
   , compact
+  , listKeys
 ) where
 import Control.Concurrent.STM
 import System.IO
@@ -17,6 +18,7 @@ import Database.Hitcask.Put
 import Database.Hitcask.Delete
 import Database.Hitcask.Compact
 import Database.Hitcask.Logs
+import Database.Hitcask.ListKeys
 import qualified Data.HashMap.Strict as M
 
 connect :: FilePath -> IO Hitcask
