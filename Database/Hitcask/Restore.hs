@@ -10,6 +10,7 @@ import Data.Digest.CRC32
 import Data.Word(Word32)
 import Database.Hitcask.Logs
 import System.IO
+import System.Directory
 
 restoreFromLogDir :: FilePath -> IO KeyDir
 restoreFromLogDir dir = do
@@ -19,8 +20,12 @@ restoreFromLogDir dir = do
 
 restoreFromFile :: LogFile -> IO KeyDir
 restoreFromFile f = do
-  r <- allKeys f
-  return $! M.fromList (reverse r)
+  exists <- doesFileExist (path f ++ ".hint")
+  if exists
+    then restoreFromHintFile f
+    else do
+          r <- allKeys f
+          return $! M.fromList (reverse r)
 
 allKeys :: LogFile -> IO [(Key, ValueLocation)]
 allKeys f = do
