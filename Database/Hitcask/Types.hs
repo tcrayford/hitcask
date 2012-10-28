@@ -18,6 +18,8 @@ data LogFile = LogFile {
   , path :: FilePath
   }
 
+type HintFile = LogFile
+
 instance Show LogFile where
   show l = "(LogFile" ++  path l ++ ")"
 

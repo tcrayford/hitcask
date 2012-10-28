@@ -12,6 +12,7 @@ import Data.Serialize.Get
 data MergingLog = MergingLog {
     mergedLog :: LogFile
   , originalFilePath :: FilePath
+  , hintFile :: HintFile
   }
 
 compact :: Hitcask -> IO ()
@@ -61,12 +62,18 @@ writeMergedContent l ks = do
   return (newLog, M.fromList r)
 
 appendToLog' :: MergingLog -> (Key, Value) -> IO (Key, ValueLocation)
-appendToLog' (MergingLog l _) (key, value) = do
+appendToLog' (MergingLog l _ _) (key, value) = do
   loc <- writeValue l key value
   return (key, loc)
 
 createMergedLog :: LogFile -> IO MergingLog
-createMergedLog (LogFile _ p) = fmap (flip MergingLog p) $ openLogFile (p ++ ".merged")
+createMergedLog (LogFile _ p) = do
+  l <- openLogFile (p ++ ".merged")
+  hint <- createHintFile p
+  return $! MergingLog l p hint
+
+createHintFile :: FilePath -> IO HintFile
+createHintFile fp = openLogFile (fp ++ ".hint")
 
 getFileContents :: LogFile -> IO B.ByteString
 getFileContents (LogFile h _) = do
@@ -78,7 +85,7 @@ replaceNonActive :: Hitcask -> [(MergingLog, KeyDir)] -> IO ()
 replaceNonActive db s = atomically $ mapM_ (swapInLog db) s
 
 swapInLog :: Hitcask -> (MergingLog, KeyDir) -> STM ()
-swapInLog db (MergingLog l original, mergedKeys) = do
+swapInLog db (MergingLog l original _, mergedKeys) = do
   modifyTVar (files db) $ \m ->
     M.insert original l m
   modifyTVar (keys db) $ \m ->
