@@ -103,5 +103,6 @@ openingLogFileSpecs = describe "getTimestamp" $ do
 
 
 -- producing hint files
+-- using hint files on startup
 -- folding
 -- forcing writes to disk
