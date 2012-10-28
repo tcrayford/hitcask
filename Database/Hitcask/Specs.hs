@@ -2,20 +2,21 @@
 import Test.Hspec.Monadic
 import Test.Hspec.HUnit()
 import Test.HUnit
-import Test.Hspec.QuickCheck(prop)
-import Control.Concurrent.STM
 import Database.Hitcask
 import Database.Hitcask.Types
 import Database.Hitcask.Get
-import Database.Hitcask.Restore
 import Database.Hitcask.Logs
 import Database.Hitcask.SpecHelper
 import Database.Hitcask.Specs.Compact
+import Database.Hitcask.Specs.QuickCheck
+import Test.Hspec.QuickCheck
+
 
 main :: IO ()
 main = hspec $ do
   openingLogFileSpecs
   compactSpecs
+  prop "it passes checkcheck postconditions" $ propCheckPostConditions
   describe "hitcask" $ do
     describe "get and put" $ do
       it "returns the value set as the key" $ do
@@ -93,7 +94,7 @@ openingLogFileSpecs = describe "getTimestamp" $ do
     head (byRecent ["12345.hitcask.data", "0.hitcask.data"]) @?= "12345.hitcask.data"
 
 
--- merging
+-- proper quickcheck, with postconditions
 -- key listing
 -- folding
 -- forcing writes to disk

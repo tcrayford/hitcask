@@ -33,6 +33,9 @@ data Hitcask = Hitcask {
   , dirPath :: FilePath
   }
 
+instance Show Hitcask where
+  show db = "Hitcask: at " ++ dirPath db
+
 type Key = ByteString
 type Value = ByteString
 

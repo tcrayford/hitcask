@@ -1,5 +1,6 @@
 module Database.Hitcask.SpecHelper where
 import Database.Hitcask
+import Database.Hitcask.Types
 import Control.Monad
 import System.Directory
 
@@ -17,4 +18,9 @@ nTimes 0 a = a
 nTimes n a = do
   a
   nTimes (n - 1) a
+
+closeDB :: Hitcask -> IO ()
+closeDB db = do
+  close db
+  removeDirectoryRecursive (dirPath db)
 
