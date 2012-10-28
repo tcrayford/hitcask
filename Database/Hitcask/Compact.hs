@@ -9,11 +9,17 @@ import System.IO
 import qualified Data.ByteString.Char8 as B
 import Data.Serialize.Get
 
+data MergingLog = MergingLog {
+    mergedLog :: LogFile
+  }
+
 compact :: Hitcask -> IO ()
 compact db = do
   nonActive <- allNonActive db
   merged <- mapM compactLogFile nonActive
-  replaceNonActive db merged
+  replaceNonActive db (map go merged)
+
+  where go (MergingLog l, k) = (l, k)
 
 allNonActive :: Hitcask -> IO [LogFile]
 allNonActive db = do
@@ -23,7 +29,7 @@ allNonActive db = do
     return (a,b)
   return $! filter (not . (== x)) (M.elems y)
 
-compactLogFile :: LogFile -> IO (LogFile, KeyDir)
+compactLogFile :: LogFile -> IO (MergingLog, KeyDir)
 compactLogFile l = do
   currentContent <- readContent l
   writeMergedContent l currentContent
@@ -49,19 +55,19 @@ readLogEntry' = do
   checkValue value crc
   return (key, value)
 
-writeMergedContent :: LogFile -> M.HashMap Key Value -> IO (LogFile, KeyDir)
+writeMergedContent :: LogFile -> M.HashMap Key Value -> IO (MergingLog, KeyDir)
 writeMergedContent l ks = do
   newLog <- createMergedLog l
   r <- mapM (appendToLog' newLog) (M.toList ks)
   return (newLog, M.fromList r)
 
-appendToLog' :: LogFile -> (Key, Value) -> IO (Key, ValueLocation)
-appendToLog' l (key, value) = do
+appendToLog' :: MergingLog -> (Key, Value) -> IO (Key, ValueLocation)
+appendToLog' (MergingLog l) (key, value) = do
   loc <- writeValue l key value
   return (key, loc)
 
-createMergedLog :: LogFile -> IO LogFile
-createMergedLog (LogFile _ p) = openLogFile (p ++ ".merged")
+createMergedLog :: LogFile -> IO MergingLog
+createMergedLog (LogFile _ p) = fmap MergingLog $ openLogFile (p ++ ".merged")
 
 getFileContents :: LogFile -> IO B.ByteString
 getFileContents (LogFile h _) = do

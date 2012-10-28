@@ -43,7 +43,7 @@ compactLogFileSpecs = describe "compactLogFile" $
     writeValue l "key" "value"
     writeValue l "key" "value2"
     (l2, _) <- compactLogFile l
-    k <- allKeys l2
+    k <- allKeys (mergedLog l2)
     map fst k @?= ["key"]
 
 replaceNonActiveSpecs :: Spec
@@ -52,7 +52,7 @@ replaceNonActiveSpecs = describe "replaceNonActive" $
     db <- createEmpty "/tmp/hitcask/db10"
     c <- readTVarIO $ current db
     rotateLogFile db
-    l <- createMergedLog c
+    l <- fmap mergedLog $ createMergedLog c
     replaceNonActive db [(l, M.empty)]
     nonActive <- allNonActive db
     head nonActive @?= l
