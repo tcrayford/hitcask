@@ -72,6 +72,15 @@ main = hspec $ do
         close db
         n @?= Nothing
 
+    describe "compacting" $
+      it "reads the same key after compaction" $ do
+        db <- createEmpty "/tmp/hitcask/db11"
+        put db "key" "value"
+        compact db
+        (Just v) <- get db "key"
+        close db
+        v @?= "value"
+
 readAllVals :: Hitcask -> [(Key, ValueLocation)] -> IO [Maybe Value]
 readAllVals db = mapM (\(k,v) -> readFromLocation db v k) . reverse
 

@@ -1,6 +1,6 @@
 *.hi
 *.o
-Database/Hitcask/Specs
+Database/Hitcask/tests
 Database/Hitcask/bench
 Database/Hitcask/profiled
 profiled.prof
