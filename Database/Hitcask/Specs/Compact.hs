@@ -8,6 +8,7 @@ import Database.Hitcask.Types
 import Database.Hitcask.Compact
 import Database.Hitcask.SpecHelper
 import Database.Hitcask.Rotation
+import Database.Hitcask.Restore
 import Database.Hitcask.Put
 import Database.Hitcask.Hint
 import Database.Hitcask.Logs

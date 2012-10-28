@@ -24,25 +24,3 @@ hint key (ValueLocation f vs vp ts) = runPut $ do
   putInt32 (B.length key)
   putByteString key
 
-restoreFromHintFile :: HintFile -> IO KeyDir
-restoreFromHintFile f = do
-  let h = handle f
-  wholeFile <- B.hGetContents h
-  let r = runParser wholeFile $
-            untilM isEmpty readLoc
-  return $! M.fromList r
-
-readLoc :: Get (Key, ValueLocation)
-readLoc = do
-  vs <- getInt32
-  vp <- getInt32
-  ts <- getInt32
-  fpLength <- getInt32
-  fp <- getByteString fpLength
-  keyLength <- getInt32
-  key <- getByteString keyLength
-  return (key, ValueLocation (U.toString fp) vs (fromIntegral vp) (fromIntegral ts))
-
-getInt32 :: Get Int
-getInt32 = fmap fromIntegral getWord32be
-

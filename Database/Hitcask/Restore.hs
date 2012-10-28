@@ -3,6 +3,7 @@ import Database.Hitcask.Types
 import qualified Data.HashMap.Strict as M
 import Data.ByteString(ByteString)
 import qualified Data.ByteString.Char8 as B
+import qualified Data.ByteString.UTF8 as U
 import Data.Serialize.Get
 import Control.Monad(when)
 import Data.Digest.CRC32
@@ -59,4 +60,26 @@ untilM f action = go []
                     y <- action
                     go (y:xs)
                   else return $! xs
+
+restoreFromHintFile :: HintFile -> IO KeyDir
+restoreFromHintFile f = do
+  let h = handle f
+  wholeFile <- B.hGetContents h
+  let r = runParser wholeFile $
+            untilM isEmpty readLoc
+  return $! M.fromList r
+
+readLoc :: Get (Key, ValueLocation)
+readLoc = do
+  vs <- getInt32
+  vp <- getInt32
+  ts <- getInt32
+  fpLength <- getInt32
+  fp <- getByteString fpLength
+  keyLength <- getInt32
+  key <- getByteString keyLength
+  return (key, ValueLocation (U.toString fp) vs (fromIntegral vp) (fromIntegral ts))
+
+getInt32 :: Get Int
+getInt32 = fmap fromIntegral getWord32be
 
