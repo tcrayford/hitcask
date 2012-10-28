@@ -69,6 +69,24 @@ getFileContents (LogFile h _) = do
   hSeek h AbsoluteSeek 0
   B.hGetNonBlocking h (fromIntegral s)
 
-
 replaceNonActive :: Hitcask -> [(LogFile, KeyDir)] -> IO ()
-replaceNonActive = undefined
+replaceNonActive db s = atomically $ mapM_ (swapInLog db) s
+
+swapInLog :: Hitcask -> (LogFile, KeyDir) -> STM ()
+swapInLog db (l@(LogFile _ p), mergedKeys) = do
+  modifyTVar (files db) $ \m ->
+    M.insert (originalFilename p) l m
+  modifyTVar (keys db) $ \m ->
+    addMergedKeyDir m mergedKeys
+
+addMergedKeyDir :: KeyDir -> KeyDir -> KeyDir
+addMergedKeyDir = M.unionWith latestWrite
+
+latestWrite :: ValueLocation -> ValueLocation -> ValueLocation
+latestWrite v1 v2
+  | timestamp v1 > timestamp v2 = v1
+  | otherwise = v2
+
+originalFilename :: FilePath -> FilePath
+originalFilename f = take (length f - length ".merged") f
+
