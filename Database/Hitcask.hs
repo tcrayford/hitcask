@@ -21,6 +21,9 @@ import Database.Hitcask.Logs
 import Database.Hitcask.ListKeys
 import qualified Data.HashMap.Strict as M
 
+standardSettings :: HitcaskSettings
+standardSettings = HitcaskSettings (2 * 1073741824)
+
 connect :: FilePath -> IO Hitcask
 connect dir = do
   createDirectoryIfMissing True dir
@@ -31,7 +34,7 @@ connect dir = do
   t <- newTVarIO $! m
   l <- newTVarIO $! allLogs
   curr <- newTVarIO h
-  return $! Hitcask t curr l dir
+  return $! Hitcask t curr l dir standardSettings
 
 getOrCreateCurrent :: FilePath -> M.HashMap FilePath LogFile -> IO LogFile
 getOrCreateCurrent dir logs

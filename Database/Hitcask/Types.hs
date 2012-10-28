@@ -34,11 +34,16 @@ instance Eq LogFile where
 
 type CurrentLogFile = LogFile
 
+data HitcaskSettings = HitcaskSettings {
+    maxBytes :: Integer
+  } deriving(Show, Eq)
+
 data Hitcask = Hitcask {
     keys :: TVar KeyDir
   , current :: TVar CurrentLogFile
   , files :: TVar (M.HashMap FilePath LogFile)
   , dirPath :: FilePath
+  , settings :: HitcaskSettings
   }
 
 instance Show Hitcask where
@@ -48,7 +53,7 @@ type Key = ByteString
 type Value = ByteString
 
 getHandle :: Hitcask -> IO Handle
-getHandle (Hitcask _ c _ _) = do
+getHandle (Hitcask _ c _ _ _) = do
   (LogFile h _) <- readTVarIO c
   return $! h
 

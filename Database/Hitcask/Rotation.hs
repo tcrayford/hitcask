@@ -8,7 +8,7 @@ import qualified Data.HashMap.Strict as M
 maybeRotateCurrentFile :: Hitcask -> IO Hitcask
 maybeRotateCurrentFile h = do
   currentSize <- currentLogSize h
-  if currentSize > (2 * 1073741824)
+  if currentSize > maxBytes (settings h)
     then rotateLogFile h
     else return $! h
 
