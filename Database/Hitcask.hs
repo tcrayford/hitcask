@@ -5,6 +5,8 @@ module Database.Hitcask(
   , Hitcask()
   , connect
   , close
+  , compact
+  , flush
 ) where
 import Control.Concurrent.STM
 import System.IO
@@ -14,6 +16,7 @@ import Database.Hitcask.Restore
 import Database.Hitcask.Get
 import Database.Hitcask.Put
 import Database.Hitcask.Delete
+import Database.Hitcask.Compact
 import Database.Hitcask.Logs
 import qualified Data.HashMap.Strict as M
 
@@ -39,4 +42,10 @@ close h = do
   logs <- readTVarIO $ files h
   mapM_ (hClose . handle) $ M.elems logs
 
+flush :: Hitcask -> IO ()
+flush h = do
+  logs <- readTVarIO $ files h
+  mapM_ (hFlush . handle) $ M.elems logs
+  c <- readTVarIO $ current h
+  hFlush $ handle c
 

@@ -8,6 +8,7 @@ import Control.Monad(when)
 import Data.Digest.CRC32
 import Data.Word(Word32)
 import Database.Hitcask.Logs
+import System.IO
 
 restoreFromLogDir :: FilePath -> IO KeyDir
 restoreFromLogDir dir = do
@@ -17,10 +18,16 @@ restoreFromLogDir dir = do
 
 restoreFromFile :: LogFile -> IO KeyDir
 restoreFromFile f = do
-  wholeFile <- B.hGetContents (handle f)
-  let r = runParser wholeFile $
-            untilM isEmpty (readLogEntry (path f) (B.length wholeFile))
+  r <- allKeys f
   return $! M.fromList (reverse r)
+
+allKeys :: LogFile -> IO [(Key, ValueLocation)]
+allKeys f = do
+  let h = handle f
+  hSeek h AbsoluteSeek 0
+  wholeFile <- B.hGetContents h
+  return $! runParser wholeFile $
+    untilM isEmpty (readLogEntry (path f) (B.length wholeFile))
 
 runParser :: ByteString -> Get a -> a
 runParser input g = case runGet g input of
