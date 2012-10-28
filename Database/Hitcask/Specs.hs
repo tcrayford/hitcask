@@ -94,7 +94,6 @@ openingLogFileSpecs = describe "getTimestamp" $ do
     head (byRecent ["12345.hitcask.data", "0.hitcask.data"]) @?= "12345.hitcask.data"
 
 
--- proper quickcheck, with postconditions
 -- key listing
 -- folding
 -- forcing writes to disk
