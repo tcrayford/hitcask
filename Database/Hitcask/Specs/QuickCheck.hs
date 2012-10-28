@@ -17,7 +17,7 @@ instance Arbitrary HitcaskAction where
   arbitrary = do
     k <- arbitrary
     v <- arbitrary
-    elements [Put k v, Delete k, Merge]
+    elements [Put k v, Delete k, Merge, CloseAndReopen]
 
 newtype HitcaskFilePath = HitcaskFilePath FilePath
 
@@ -28,6 +28,7 @@ data HitcaskAction =
     Put Key Value
   | Delete Key
   | Merge
+  | CloseAndReopen
   deriving(Show, Eq)
 
 data HitcaskPostCondition =
@@ -39,9 +40,9 @@ propCheckPostConditions :: HitcaskFilePath -> [HitcaskAction] -> Property
 propCheckPostConditions (HitcaskFilePath fp) actions = monadicIO $ do
   db <- run $ createEmpty fp
   let postConditions = postConditionsFromActions actions
-  run $ runActions db actions
-  checkPostConditions db postConditions
-  run $ closeDB db
+  db2 <- run $ runActions db actions
+  checkPostConditions db2 postConditions
+  run $ closeDB db2
 
 type PostConditions = M.HashMap Key HitcaskPostCondition
 
@@ -52,18 +53,20 @@ postcondition :: HitcaskAction -> [(Key, HitcaskPostCondition)]
 postcondition (Put k v) = [(k, KeyHasValue k v)]
 postcondition (Delete k) = [(k, KeyIsEmpty k)]
 postcondition Merge = []
+postcondition CloseAndReopen = []
 
-runActions :: Hitcask -> [HitcaskAction] -> IO ()
-runActions db actions = forM_ actions (runAction db)
+runActions :: Hitcask -> [HitcaskAction] -> IO Hitcask
+runActions = foldM runAction
 
-runAction :: Hitcask -> HitcaskAction -> IO ()
-runAction db (Put k v) = do
-  put db k v
-  return ()
-runAction db (Delete k) = do
-  delete db k
-  return ()
-runAction db Merge = compact db
+runAction :: Hitcask -> HitcaskAction -> IO Hitcask
+runAction db (Put k v) = put db k v
+runAction db (Delete k) = delete db k
+runAction db Merge = do
+  compact db
+  return db
+runAction db CloseAndReopen = do
+  close db
+  connect (dirPath db)
 
 checkPostConditions :: Hitcask -> PostConditions -> PropertyM IO ()
 checkPostConditions db ps = do
@@ -82,5 +85,3 @@ checkCondition db (KeyIsEmpty k) = do
   n <- get db k
   return $! isNothing n
 
--- todo
--- add CloseAndReopen
