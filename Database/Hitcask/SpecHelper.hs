@@ -5,10 +5,14 @@ import Control.Monad
 import System.Directory
 
 createEmpty :: FilePath -> IO Hitcask
-createEmpty dir = do
+createEmpty dir = createEmptyWith dir standardSettings
+
+createEmptyWith :: FilePath -> HitcaskSettings -> IO Hitcask
+createEmptyWith dir options = do
   whenM (doesDirectoryExist dir)
     (removeDirectoryRecursive dir)
-  connect dir
+  connectWith dir options
+
 
 whenM :: (Monad m) => m Bool -> m () -> m ()
 whenM t a = t >>= flip when a

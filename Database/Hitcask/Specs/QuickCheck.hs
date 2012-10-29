@@ -7,8 +7,8 @@ import qualified Data.HashMap.Strict as M
 import Control.Monad
 import Test.QuickCheck.Monadic
 import Test.QuickCheck
-import Data.Maybe(isNothing)
 import qualified Data.ByteString as B
+import Data.Maybe
 
 instance Arbitrary B.ByteString where
   arbitrary = fmap B.pack arbitrary
@@ -36,9 +36,14 @@ data HitcaskPostCondition =
   | KeyIsEmpty Key
   deriving(Show, Eq)
 
-propCheckPostConditions :: HitcaskFilePath -> [HitcaskAction] -> Property
-propCheckPostConditions (HitcaskFilePath fp) actions = monadicIO $ do
-  db <- run $ createEmpty fp
+newtype MaxBytes = MaxBytes Integer deriving(Show)
+
+instance Arbitrary MaxBytes where
+  arbitrary = elements $ map (MaxBytes . (* 5000)) [0..10]
+
+propCheckPostConditions :: (HitcaskFilePath, MaxBytes) -> [HitcaskAction] -> Property
+propCheckPostConditions (HitcaskFilePath fp, MaxBytes b) actions = monadicIO $ do
+  db <- run $ createEmptyWith fp (standardSettings { maxBytes = b})
   let postConditions = postConditionsFromActions actions
   db2 <- run $ runActions db actions
   checkPostConditions db2 postConditions
@@ -79,8 +84,8 @@ instance Show HitcaskFilePath where
 
 checkCondition :: Hitcask -> HitcaskPostCondition -> IO Bool
 checkCondition db (KeyHasValue k v) = do
-  (Just x) <- get db k
-  return $! x == v
+  j <- get db k
+  return $! isJust j && (fromJust j) == v
 checkCondition db (KeyIsEmpty k) = do
   n <- get db k
   return $! isNothing n

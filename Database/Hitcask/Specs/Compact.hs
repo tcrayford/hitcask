@@ -1,8 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Database.Hitcask.Specs.Compact(compactSpecs) where
 import Test.Hspec.Monadic
+import Test.Hspec.QuickCheck
+import Test.QuickCheck
 import Test.Hspec.HUnit()
 import Test.HUnit
+import Data.Serialize.Get
 import Control.Concurrent.STM
 import Database.Hitcask.Types
 import Database.Hitcask.Compact
@@ -12,6 +15,7 @@ import Database.Hitcask.Restore
 import Database.Hitcask.Put
 import Database.Hitcask.Hint
 import Database.Hitcask.Logs
+import Database.Hitcask.Specs.Arbitrary
 import Database.Hitcask
 import Database.Hitcask.Restore
 import qualified Data.HashMap.Strict as M
@@ -23,6 +27,7 @@ compactSpecs = do
   replaceNonActiveSpecs
   addMergedKeyDirSpecs
   hintFileSpecs
+  parsingRoundTripSpecs
 
 allNonActiveSpecs :: Spec
 allNonActiveSpecs = describe "allNonActive" $ do
@@ -80,3 +85,12 @@ hintFileSpecs = describe "writing and restoring from hint files" $
     close db
     restored <- restoreFromHintFile (hintFile m)
     restored @?= original
+
+parsingRoundTripSpecs :: Spec
+parsingRoundTripSpecs = describe "parsing a hint" $
+  prop "restores the same value location" propParsingRoundTrip
+
+propParsingRoundTrip :: NonEmptyKey -> ValueLocation -> Bool
+propParsingRoundTrip (NonEmptyKey k) loc = restored == (k, loc)
+  where (Right restored) = runGet readLoc (hint k loc)
+

@@ -4,9 +4,11 @@ module Database.Hitcask(
   , delete
   , Hitcask()
   , connect
+  , connectWith
   , close
   , compact
   , listKeys
+  , standardSettings
 ) where
 import Control.Concurrent.STM
 import System.IO
@@ -25,7 +27,10 @@ standardSettings :: HitcaskSettings
 standardSettings = HitcaskSettings (2 * 1073741824)
 
 connect :: FilePath -> IO Hitcask
-connect dir = do
+connect dir = connectWith dir standardSettings
+
+connectWith :: FilePath -> HitcaskSettings -> IO Hitcask
+connectWith dir options = do
   createDirectoryIfMissing True dir
   m <- restoreFromLogDir dir
   logs <- openLogFiles dir
@@ -34,7 +39,7 @@ connect dir = do
   t <- newTVarIO $! m
   l <- newTVarIO $! allLogs
   curr <- newTVarIO h
-  return $! Hitcask t curr l dir standardSettings
+  return $! Hitcask t curr l dir options
 
 getOrCreateCurrent :: FilePath -> M.HashMap FilePath LogFile -> IO LogFile
 getOrCreateCurrent dir logs
