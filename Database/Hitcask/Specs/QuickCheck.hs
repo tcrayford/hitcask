@@ -3,26 +3,18 @@ module Database.Hitcask.Specs.QuickCheck where
 import Database.Hitcask.Types
 import Database.Hitcask.SpecHelper
 import Database.Hitcask
+import Database.Hitcask.Specs.Arbitrary
 import qualified Data.HashMap.Strict as M
 import Control.Monad
 import Test.QuickCheck.Monadic
 import Test.QuickCheck
-import qualified Data.ByteString as B
 import Data.Maybe
-
-instance Arbitrary B.ByteString where
-  arbitrary = fmap B.pack arbitrary
 
 instance Arbitrary HitcaskAction where
   arbitrary = do
-    k <- arbitrary
-    v <- arbitrary
+    (NonEmptyKey k) <- arbitrary
+    (NonEmptyKey v) <- arbitrary
     elements [Put k v, Delete k, Merge, CloseAndReopen]
-
-newtype HitcaskFilePath = HitcaskFilePath FilePath
-
-instance Arbitrary HitcaskFilePath where
-  arbitrary = elements $ map (HitcaskFilePath . ("/tmp/hitcask/arbitrarydb" ++) . show) ([0..10] :: [Integer])
 
 data HitcaskAction =
     Put Key Value
@@ -39,7 +31,7 @@ data HitcaskPostCondition =
 newtype MaxBytes = MaxBytes Integer deriving(Show)
 
 instance Arbitrary MaxBytes where
-  arbitrary = elements $ map (MaxBytes . (* 5000)) [0..10]
+  arbitrary = elements $ map (MaxBytes . (* 5000)) [1..10]
 
 propCheckPostConditions :: (HitcaskFilePath, MaxBytes) -> [HitcaskAction] -> Property
 propCheckPostConditions (HitcaskFilePath fp, MaxBytes b) actions = monadicIO $ do
