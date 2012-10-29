@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+
+echo "" | ghci -Wall -fwarn-tabs -Werror -v0 ./Database/Hitcask/Specs.hs
+find Database/ -name "*.hs" | xargs hlint
+
