@@ -2,12 +2,8 @@ module Database.Hitcask.Hint where
 import Database.Hitcask.Types
 import Database.Hitcask.Logs
 import Database.Hitcask.Put
-import Database.Hitcask.Restore
 import qualified Data.ByteString.Char8 as B
-import qualified Data.ByteString.UTF8 as U
 import Data.Serialize.Put
-import Data.Serialize.Get
-import qualified Data.HashMap.Strict as M
 import System.IO(hFlush)
 
 writeHint :: HintFile -> Key -> ValueLocation -> IO ()

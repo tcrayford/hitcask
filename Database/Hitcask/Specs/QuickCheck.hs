@@ -56,8 +56,12 @@ runActions :: Hitcask -> [HitcaskAction] -> IO Hitcask
 runActions = foldM runAction
 
 runAction :: Hitcask -> HitcaskAction -> IO Hitcask
-runAction db (Put k v) = put db k v
-runAction db (Delete k) = delete db k
+runAction db (Put k v) = do
+  put db k v
+  return db
+runAction db (Delete k) = do
+ delete db k
+ return db
 runAction db Merge = do
   compact db
   return db
@@ -77,7 +81,7 @@ instance Show HitcaskFilePath where
 checkCondition :: Hitcask -> HitcaskPostCondition -> IO Bool
 checkCondition db (KeyHasValue k v) = do
   j <- get db k
-  return $! isJust j && (fromJust j) == v
+  return $! j == Just v
 checkCondition db (KeyIsEmpty k) = do
   n <- get db k
   return $! isNothing n

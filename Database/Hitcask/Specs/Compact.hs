@@ -2,7 +2,6 @@
 module Database.Hitcask.Specs.Compact(compactSpecs) where
 import Test.Hspec.Monadic
 import Test.Hspec.QuickCheck
-import Test.QuickCheck
 import Test.Hspec.HUnit()
 import Test.HUnit
 import Data.Serialize.Get
@@ -17,7 +16,6 @@ import Database.Hitcask.Hint
 import Database.Hitcask.Logs
 import Database.Hitcask.Specs.Arbitrary
 import Database.Hitcask
-import Database.Hitcask.Restore
 import qualified Data.HashMap.Strict as M
 
 compactSpecs :: Spec
@@ -48,8 +46,8 @@ compactLogFileSpecs :: Spec
 compactLogFileSpecs = describe "compactLogFile" $
   it "produces a new log file with no duplicate keys" $ do
     l <- openLogFile "/tmp/hitcask/db09/logfile.test"
-    writeValue l "key" "value"
-    writeValue l "key" "value2"
+    _ <- writeValue l "key" "value"
+    _ <- writeValue l "key" "value2"
     (l2, _) <- compactLogFile l
     k <- allKeys (mergedLog l2)
     map fst k @?= ["key"]
@@ -80,7 +78,7 @@ hintFileSpecs = describe "writing and restoring from hint files" $
     c <- readTVarIO $ current db
     rotateLogFile db
     m <- createMergedLog c
-    appendToLog' m ("key", "value")
+    _ <- appendToLog' m ("key", "value")
     original <- restoreFromFile c
     close db
     restored <- restoreFromHintFile (hintFile m)

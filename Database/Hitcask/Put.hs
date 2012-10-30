@@ -11,14 +11,13 @@ import qualified Data.HashMap.Strict as M
 import Data.Serialize.Put
 import Data.Digest.CRC32
 
-put :: Hitcask -> Key -> Value -> IO Hitcask
+put :: Hitcask -> Key -> Value -> IO ()
 put h key value = do
   maybeRotateCurrentFile h
   f <- readTVarIO $ current h
   valueLocation <- writeValue f key value
-  b <- updateKeyDir h key valueLocation
+  updateKeyDir h key valueLocation
   flushLog f
-  return $! b
 
 writeValue :: LogFile -> Key -> Value -> IO ValueLocation
 writeValue l@(LogFile f _) key value = do
@@ -29,11 +28,10 @@ writeValue l@(LogFile f _) key value = do
   appendToLog f key value valueLocation
   return $! valueLocation
 
-updateKeyDir :: Hitcask -> Key -> ValueLocation -> IO Hitcask
-updateKeyDir h key valueLocation = atomically $ do
+updateKeyDir :: Hitcask -> Key -> ValueLocation -> IO ()
+updateKeyDir h key valueLocation = atomically $
     modifyTVar' (keys h) $ \m ->
       M.insert key valueLocation m
-    return $! h
 
 formatValue :: FilePath -> Value -> Integer -> Integer -> ValueLocation
 formatValue filePath value = ValueLocation filePath (B.length value)
