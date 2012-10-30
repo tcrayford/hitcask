@@ -1,7 +1,7 @@
 module Database.Hitcask.Restore where
 import Database.Hitcask.Types
+import Database.Hitcask.Parsing
 import qualified Data.HashMap.Strict as M
-import Data.ByteString(ByteString)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.UTF8 as U
 import Data.Serialize.Get
@@ -32,13 +32,7 @@ allKeys f = do
   let h = handle f
   hSeek h AbsoluteSeek 0
   wholeFile <- B.hGetContents h
-  return $! runParser wholeFile $
-    untilM isEmpty (readLogEntry (path f) (B.length wholeFile))
-
-runParser :: ByteString -> Get a -> a
-runParser input g = case runGet g input of
-  Right r -> r
-  Left e -> error e
+  return $! parseMany wholeFile (readLogEntry (path f) (B.length wholeFile))
 
 readLogEntry :: FilePath -> Int -> Get (Key, ValueLocation)
 readLogEntry f startingSize = do
@@ -56,22 +50,12 @@ checkValue :: (Monad m) => Value -> Word32 -> m ()
 checkValue v crc = when (crc32 v /= crc)
   (fail $ "value failed crc check: " ++ show v)
 
-untilM :: (Monad m) => m Bool -> m a -> m [a]
-untilM f action = go []
-  where go xs = do
-                x <- f
-                if not x
-                  then do
-                    y <- action
-                    go (y:xs)
-                  else return $! xs
 
 restoreFromHintFile :: HintFile -> IO KeyDir
 restoreFromHintFile f = do
   let h = handle f
   wholeFile <- B.hGetContents h
-  let r = runParser wholeFile $
-            untilM isEmpty readLoc
+  let r = parseMany wholeFile readLoc
   return $! M.fromList r
 
 readLoc :: Get (Key, ValueLocation)

@@ -1,6 +1,8 @@
 module Database.Hitcask.Compact where
 import Database.Hitcask.Types
 import Database.Hitcask.Restore
+import Database.Hitcask.Parsing
+import Database.Hitcask.Util
 import Database.Hitcask.Put
 import Database.Hitcask.Hint
 import Database.Hitcask.Logs
@@ -22,18 +24,18 @@ allNonActive db = do
     a <- readTVar $ current db
     b <- readTVar $ files db
     return (a,b)
-  return $! filter (not . (== x)) (M.elems y)
+  return $! remove x (M.elems y)
 
 compactLogFile :: LogFile -> IO (MergingLog, KeyDir)
 compactLogFile l = do
-  currentContent <- readContent l
+  currentContent <- readState l
   writeMergedContent l currentContent
 
-readContent :: LogFile -> IO (M.HashMap Key Value)
-readContent f = do
+readState :: LogFile -> IO (M.HashMap Key Value)
+readState f = do
   let h = handle f
   hSeek h AbsoluteSeek 0
-  wholeFile <- getFileContents f
+  wholeFile <- readImmutableLog f
   let r = runParser wholeFile $
         untilM isEmpty readLogEntry'
   return $! M.fromList (reverse r)
@@ -68,8 +70,8 @@ createMergedLog (LogFile _ p) = do
   h <- createHintFile p
   return $! MergingLog l p h
 
-getFileContents :: LogFile -> IO B.ByteString
-getFileContents (LogFile h _) = do
+readImmutableLog :: LogFile -> IO B.ByteString
+readImmutableLog (LogFile h _) = do
   s <- hFileSize h
   hSeek h AbsoluteSeek 0
   B.hGetNonBlocking h (fromIntegral s)
