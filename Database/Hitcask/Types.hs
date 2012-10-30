@@ -52,8 +52,3 @@ instance Show Hitcask where
 type Key = ByteString
 type Value = ByteString
 
-getHandle :: Hitcask -> IO Handle
-getHandle (Hitcask _ c _ _ _) = do
-  (LogFile h _) <- readTVarIO c
-  return $! h
-

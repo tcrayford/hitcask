@@ -14,8 +14,8 @@ maybeRotateCurrentFile h = do
 
 currentLogSize :: Hitcask -> IO Integer
 currentLogSize h = do
-  f <- getHandle h
-  hFileSize f
+  f <- readTVarIO $ current h
+  hFileSize $ handle f
 
 rotateLogFile :: Hitcask -> IO Hitcask
 rotateLogFile h = do

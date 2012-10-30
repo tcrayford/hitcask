@@ -57,19 +57,16 @@ writeMergedContent l ks = do
   return (newLog, M.fromList r)
 
 appendToLog' :: MergingLog -> (Key, Value) -> IO (Key, ValueLocation)
-appendToLog' (MergingLog l _ hint) (key, value) = do
+appendToLog' (MergingLog l _ h) (key, value) = do
   loc <- writeValue l key value
-  writeHint hint key loc
+  writeHint h key loc
   return (key, loc)
 
 createMergedLog :: LogFile -> IO MergingLog
 createMergedLog (LogFile _ p) = do
   l <- openLogFile (p ++ ".merged")
-  hint <- createHintFile p
-  return $! MergingLog l p hint
-
-createHintFile :: FilePath -> IO HintFile
-createHintFile fp = openLogFile (fp ++ ".hint")
+  h <- createHintFile p
+  return $! MergingLog l p h
 
 getFileContents :: LogFile -> IO B.ByteString
 getFileContents (LogFile h _) = do

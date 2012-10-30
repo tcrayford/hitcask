@@ -1,5 +1,6 @@
 module Database.Hitcask.Hint where
 import Database.Hitcask.Types
+import Database.Hitcask.Logs
 import Database.Hitcask.Put
 import Database.Hitcask.Restore
 import qualified Data.ByteString.Char8 as B
@@ -23,4 +24,7 @@ hint key (ValueLocation f vs vp ts) = runPut $ do
   putByteString $ B.pack f
   putInt32 (B.length key)
   putByteString key
+
+createHintFile :: FilePath -> IO HintFile
+createHintFile fp = openLogFile (fp ++ ".hint")
 
