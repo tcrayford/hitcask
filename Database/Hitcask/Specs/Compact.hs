@@ -32,15 +32,15 @@ allNonActiveSpecs = describe "allNonActive" $ do
   it "doesn't contain the active log file" $ do
     db <- createEmpty "/tmp/hitcask/db08"
     a <- fmap current $ readTVarIO $ logs db
-    nonActive <- allNonActive db
-    elem a nonActive @?= False
+    old <- allNonActive db
+    elem a old @?= False
 
   it "contains another log file" $ do
     db <- createEmpty "/tmp/hitcask/db09"
     a <- fmap current $ readTVarIO $ logs db
     rotateLogFile db
-    nonActive <- allNonActive db
-    elem a nonActive @?= True
+    old <- allNonActive db
+    elem a old @?= True
 
 compactLogFileSpecs :: Spec
 compactLogFileSpecs = describe "compactLogFile" $
@@ -60,8 +60,8 @@ replaceNonActiveSpecs = describe "replaceNonActive" $
     rotateLogFile db
     l <- createMergedLog (current c)
     replaceNonActive db [(l, M.empty)]
-    nonActive <- allNonActive db
-    head nonActive @?= mergedLog l
+    old <- allNonActive db
+    head old @?= mergedLog l
 
 addMergedKeyDirSpecs :: Spec
 addMergedKeyDirSpecs = describe "latestWrite" $
