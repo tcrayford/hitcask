@@ -31,13 +31,13 @@ allNonActiveSpecs :: Spec
 allNonActiveSpecs = describe "allNonActive" $ do
   it "doesn't contain the active log file" $ do
     db <- createEmpty "/tmp/hitcask/db08"
-    a <- readTVarIO $ current db
+    a <- fmap current $ readTVarIO $ logs db
     nonActive <- allNonActive db
     elem a nonActive @?= False
 
   it "contains another log file" $ do
     db <- createEmpty "/tmp/hitcask/db09"
-    a <- readTVarIO $ current db
+    a <- fmap current $ readTVarIO $ logs db
     rotateLogFile db
     nonActive <- allNonActive db
     elem a nonActive @?= True
@@ -56,9 +56,9 @@ replaceNonActiveSpecs :: Spec
 replaceNonActiveSpecs = describe "replaceNonActive" $
   it "puts the updated log file in the db" $ do
     db <- createEmpty "/tmp/hitcask/db10"
-    c <- readTVarIO $ current db
+    c <- readTVarIO $ logs db
     rotateLogFile db
-    l <- createMergedLog c
+    l <- createMergedLog (current c)
     replaceNonActive db [(l, M.empty)]
     nonActive <- allNonActive db
     head nonActive @?= mergedLog l
@@ -75,11 +75,11 @@ hintFileSpecs :: Spec
 hintFileSpecs = describe "writing and restoring from hint files" $
   it "restores the same keydir as read from the log" $ do
     db <- createEmpty "/tmp/hitcask/db13"
-    c <- readTVarIO $ current db
+    c <- readTVarIO $ logs db
     rotateLogFile db
-    m <- createMergedLog c
+    m <- createMergedLog (current c)
     _ <- appendToLog' m ("key", "value")
-    original <- restoreFromFile c
+    original <- restoreFromFile (current c)
     close db
     restored <- restoreFromHintFile (hintFile m)
     restored @?= original

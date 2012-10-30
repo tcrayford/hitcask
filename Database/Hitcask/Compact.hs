@@ -20,11 +20,11 @@ compact db = do
 
 allNonActive :: Hitcask -> IO [LogFile]
 allNonActive db = do
-  (x,y) <- atomically $ do
-    a <- readTVar $ current db
-    b <- readTVar $ files db
-    return (a,b)
-  return $! remove x (M.elems y)
+  x <- readTVarIO $ logs db
+  return $! nonActive x
+
+nonActive :: HitcaskLogs -> [LogFile]
+nonActive l = remove (current l) (M.elems (files l))
 
 compactLogFile :: LogFile -> IO (MergingLog, KeyDir)
 compactLogFile l = do
@@ -81,8 +81,8 @@ replaceNonActive db s = atomically $ mapM_ (swapInLog db) s
 
 swapInLog :: Hitcask -> (MergingLog, KeyDir) -> STM ()
 swapInLog db (MergingLog l original _, mergedKeys) = do
-  modifyTVar (files db) $ \m ->
-    M.insert original l m
+  modifyTVar (logs db) $ \m ->
+    m { files = M.insert original l (files m) }
   modifyTVar (keys db) $ \m ->
     addMergedKeyDir m mergedKeys
 

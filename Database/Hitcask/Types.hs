@@ -38,10 +38,14 @@ data HitcaskSettings = HitcaskSettings {
     maxBytes :: Integer
   } deriving(Show, Eq)
 
+data HitcaskLogs = HitcaskLogs {
+    current :: CurrentLogFile
+  , files :: M.HashMap FilePath LogFile
+  }
+
 data Hitcask = Hitcask {
     keys :: TVar KeyDir
-  , current :: TVar CurrentLogFile
-  , files :: TVar (M.HashMap FilePath LogFile)
+  , logs :: TVar HitcaskLogs
   , dirPath :: FilePath
   , settings :: HitcaskSettings
   }

@@ -14,10 +14,10 @@ import Data.Digest.CRC32
 put :: Hitcask -> Key -> Value -> IO ()
 put h key value = do
   maybeRotateCurrentFile h
-  f <- readTVarIO $ current h
-  valueLocation <- writeValue f key value
+  f <- readTVarIO $ logs h
+  valueLocation <- writeValue (current f) key value
   updateKeyDir h key valueLocation
-  flushLog f
+  flushLog (current f)
 
 writeValue :: LogFile -> Key -> Value -> IO ValueLocation
 writeValue l@(LogFile f _) key value = do

@@ -33,21 +33,20 @@ connectWith :: FilePath -> HitcaskSettings -> IO Hitcask
 connectWith dir options = do
   createDirectoryIfMissing True dir
   m <- restoreFromLogDir dir
-  logs <- openLogFiles dir
-  h@(LogFile _ p) <- getOrCreateCurrent dir logs
-  let allLogs = if M.null logs then M.fromList [(p, h)] else logs
+  ls <- openLogFiles dir
+  h@(LogFile _ p) <- getOrCreateCurrent dir ls
+  let allLogs = if M.null ls then M.fromList [(p, h)] else ls
   t <- newTVarIO $! m
-  l <- newTVarIO $! allLogs
-  curr <- newTVarIO h
-  return $! Hitcask t curr l dir options
+  l <- newTVarIO $! HitcaskLogs h allLogs
+  return $! Hitcask t l dir options
 
 getOrCreateCurrent :: FilePath -> M.HashMap FilePath LogFile -> IO LogFile
-getOrCreateCurrent dir logs
-  | M.null logs = createNewLog dir
-  | otherwise = return $! head (M.elems logs)
+getOrCreateCurrent dir ls
+  | M.null ls = createNewLog dir
+  | otherwise = return $! head (M.elems ls)
 
 close :: Hitcask -> IO ()
 close h = do
-  logs <- readTVarIO $ files h
-  mapM_ (hClose . handle) $ M.elems logs
+  ls <- readTVarIO $ logs h
+  mapM_ (hClose . handle) $ M.elems (files ls)
 

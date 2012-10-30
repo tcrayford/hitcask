@@ -29,8 +29,8 @@ logForValueLocation ls (ValueLocation file _ _ _) = M.lookup file ls
 
 readFromLocation :: Hitcask -> ValueLocation -> Key -> IO (Maybe Value)
 readFromLocation c v key = do
-  f <- readTVarIO $ files c
-  let l = logForValueLocation f v
+  f <- readTVarIO $ logs c
+  let l = logForValueLocation (files f) v
   case l of
     (Just (LogFile h _)) -> readFromLogFile h v key
     Nothing -> return Nothing

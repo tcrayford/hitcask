@@ -14,18 +14,17 @@ maybeRotateCurrentFile h = do
 
 currentLogSize :: Hitcask -> IO Integer
 currentLogSize h = do
-  f <- readTVarIO $ current h
-  hFileSize $ handle f
+  f <- readTVarIO $ logs h
+  hFileSize $ handle (current f)
 
 rotateLogFile :: Hitcask -> IO ()
 rotateLogFile h = do
   l <- createNewLog (dirPath h)
   swapLogFile h l
 
-swapLogFile ::  Hitcask -> LogFile -> IO ()
-swapLogFile h l@(LogFile _ p) = atomically $ do
-    writeTVar (current h) l
-    logs <- readTVar $ files h
-    writeTVar (files h) (M.insert p l logs)
+swapLogFile :: Hitcask -> LogFile -> IO ()
+swapLogFile h l@(LogFile _ p) = atomically $
+    modifyTVar (logs h) (\ls ->
+      HitcaskLogs l (M.insert p l (files ls)))
 
 
