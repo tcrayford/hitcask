@@ -14,8 +14,8 @@ import System.Directory
 
 restoreFromLogDir :: FilePath -> IO KeyDir
 restoreFromLogDir dir = do
-  logs <- openLogFiles dir
-  restored <- mapM restoreFromFile $ M.elems logs
+  ls <- openLogFiles dir
+  restored <- mapM restoreFromFile $ M.elems ls
   return $! M.unions restored
 
 restoreFromFile :: LogFile -> IO KeyDir

@@ -14,14 +14,12 @@ import Data.Serialize.Get
 
 compact :: Hitcask -> IO ()
 compact db = do
-  nonActive <- allNonActive db
-  merged <- mapM compactLogFile nonActive
+  immutable <- allNonActive db
+  merged <- mapM compactLogFile immutable
   replaceNonActive db merged
 
 allNonActive :: Hitcask -> IO [LogFile]
-allNonActive db = do
-  x <- readTVarIO $ logs db
-  return $! nonActive x
+allNonActive db = fmap nonActive . readTVarIO $ logs db
 
 nonActive :: HitcaskLogs -> [LogFile]
 nonActive l = remove (current l) (M.elems (files l))

@@ -30,8 +30,8 @@ getTimestamp = read . head . splitOn "." . last . splitOn "/"
 openLogFiles :: FilePath -> IO (M.HashMap FilePath LogFile)
 openLogFiles dir = do
   filenames <- logFilesInDir dir
-  logs <- mapM openLogFile filenames
-  return $! M.fromList $ zip filenames logs
+  ls <- mapM openLogFile filenames
+  return $! M.fromList $ zip filenames ls
 
 openLogFile :: FilePath -> IO LogFile
 openLogFile filepath = do
