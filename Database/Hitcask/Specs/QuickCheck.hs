@@ -13,7 +13,7 @@ import Data.Maybe
 instance Arbitrary HitcaskAction where
   arbitrary = do
     (NonEmptyKey k) <- arbitrary
-    (NonEmptyKey v) <- arbitrary
+    (NonEmptyValue v) <- arbitrary
     elements [Put k v, Delete k, Merge, CloseAndReopen]
 
 data HitcaskAction =

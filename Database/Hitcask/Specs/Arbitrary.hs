@@ -12,7 +12,7 @@ instance Arbitrary B.ByteString where
 newtype LowerCase = LowerCase String
 
 instance Arbitrary LowerCase where
-  arbitrary = elements $ map (LowerCase . ("key_" ++ ) . (:[])) ['a'..'z']
+  arbitrary = elements $ map (LowerCase . ("_" ++ ) . (:[])) ['a'..'z']
 
 instance Arbitrary ValueLocation where
   arbitrary = do
@@ -29,11 +29,17 @@ instance Arbitrary HitcaskFilePath where
 
 
 newtype NonEmptyKey = NonEmptyKey Key deriving (Show)
+newtype NonEmptyValue = NonEmptyValue Value deriving (Show)
 
 instance Arbitrary NonEmptyKey where
   arbitrary = do
     (LowerCase a) <- arbitrary
-    return $! NonEmptyKey $ B.pack (map c2w8 a)
+    return $! NonEmptyKey $ B.pack (map c2w8 ("key" ++ a))
+
+instance Arbitrary NonEmptyValue where
+  arbitrary = do
+    (LowerCase a) <- arbitrary
+    return $! NonEmptyValue $ B.pack (map c2w8 ("value" ++ a))
 
 c2w8 ::  Char -> Word8
 c2w8 = fromIntegral . fromEnum
