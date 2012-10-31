@@ -16,10 +16,15 @@ hint key (ValueLocation f vs vp ts) = runPut $ do
   putInt32 vs
   putInt32 vp
   putInt32 ts
-  putInt32 (length f)
-  putByteString $ B.pack f
+  putWithLength f
   putInt32 (B.length key)
   putByteString key
+
+putWithLength :: String -> Put
+putWithLength s = do
+  putInt32 (B.length packed)
+  putByteString packed
+  where packed = B.pack s
 
 createHintFile :: FilePath -> IO HintFile
 createHintFile fp = openLogFile (fp ++ ".hint")
