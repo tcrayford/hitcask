@@ -31,7 +31,9 @@ data HitcaskPostCondition =
 newtype MaxBytes = MaxBytes Integer deriving(Show)
 
 instance Arbitrary MaxBytes where
-  arbitrary = elements $ map (MaxBytes . (* 5000)) [1..10]
+  arbitrary = do
+    (Positive x) <- arbitrary
+    return $! MaxBytes x
 
 propCheckPostConditions :: (HitcaskFilePath, MaxBytes) -> [HitcaskAction] -> Property
 propCheckPostConditions (HitcaskFilePath fp, MaxBytes b) actions = monadicIO $ do

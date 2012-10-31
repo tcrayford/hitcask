@@ -34,8 +34,7 @@ readState f = do
   let h = handle f
   hSeek h AbsoluteSeek 0
   wholeFile <- readImmutableLog f
-  let r = runParser wholeFile $
-        untilM isEmpty readLogEntry'
+  let r = parseMany wholeFile readLogEntry'
   return $! M.fromList (reverse r)
 
 readLogEntry' :: Get (Key, Value)

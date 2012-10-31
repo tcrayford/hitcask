@@ -76,12 +76,13 @@ main = hspec $ do
 
     describe "compacting" $
       it "reads the same key after compaction" $ do
-        db <- createEmpty "/tmp/hitcask/db11"
+        db <- createEmptyWith "/tmp/hitcask/db11" (standardSettings { maxBytes = 1 })
+        put db "key" "value"
         put db "key" "value"
         compact db
-        (Just v) <- get db "key"
+        v <- get db "key"
         close db
-        v @?= "value"
+        v @?= Just "value"
 
     describe "listing keys" $
       it "lists the available keys" $ do

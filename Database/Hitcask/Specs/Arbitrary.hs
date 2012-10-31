@@ -25,7 +25,7 @@ instance Arbitrary ValueLocation where
 newtype HitcaskFilePath = HitcaskFilePath FilePath
 
 instance Arbitrary HitcaskFilePath where
-  arbitrary = elements $ map (HitcaskFilePath . ("/tmp/hitcask/arbitrarydb" ++) . show) ([0..10] :: [Integer])
+  arbitrary = elements $ map (HitcaskFilePath . ("/tmp/hitcask/arbitrarydb" ++) . show) ([0..100] :: [Integer])
 
 
 newtype NonEmptyKey = NonEmptyKey Key deriving (Show)
