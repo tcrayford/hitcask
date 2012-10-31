@@ -78,7 +78,7 @@ hintFileSpecs = describe "writing and restoring from hint files" $
     c <- readTVarIO $ logs db
     rotateLogFile db
     m <- createMergedLog (current c)
-    _ <- appendToLog' m ("key", "value")
+    _ <- appendToLog' m ("key", (10000000000000, "value"))
     original <- restoreFromLog (current c)
     close db
     restored <- loadHintFile (hintFile m)

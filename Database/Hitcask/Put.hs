@@ -20,10 +20,14 @@ put h key value = do
   flushLog (current f)
 
 writeValue :: LogFile -> Key -> Value -> IO ValueLocation
-writeValue l@(LogFile f _) key value = do
+writeValue l key value = do
+  time <- currentTimestamp
+  writeValueWithTimestamp l time key value
+
+writeValueWithTimestamp :: LogFile -> Timestamp -> Key -> Value -> IO ValueLocation
+writeValueWithTimestamp l@(LogFile f _) time key value = do
   hSeek f SeekFromEnd 0
   currentPosition <- hTell f
-  time <- currentTimestamp
   let valueLocation = formatValue (path l) value currentPosition time
   appendToLog f key value valueLocation
   return $! valueLocation
@@ -33,7 +37,7 @@ updateKeyDir h key valueLocation = atomically $
     modifyTVar' (keys h) $ \m ->
       M.insert key valueLocation m
 
-formatValue :: FilePath -> Value -> Integer -> Integer -> ValueLocation
+formatValue :: FilePath -> Value -> Integer -> Timestamp -> ValueLocation
 formatValue filePath value = ValueLocation filePath (B.length value)
 
 appendToLog :: Handle -> Key -> Value -> ValueLocation -> IO ()
@@ -43,7 +47,7 @@ putInt32 ::  Integral a => a -> Put
 putInt32 a = putWord32be $ fromIntegral a
 
 type LogEntry = ByteString
-formatForLog :: Key -> Value -> Integer -> LogEntry
+formatForLog :: Key -> Value -> Timestamp -> LogEntry
 formatForLog k v t = runPut $ do
   putWord32be $ crc32 v
   putInt32 t

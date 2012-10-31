@@ -31,7 +31,7 @@ compactLogFile l = do
   currentContent <- readState l
   writeMergedContent l currentContent
 
-readState :: LogFile -> IO (M.HashMap Key Value)
+readState :: LogFile -> IO (M.HashMap Key (Timestamp, Value))
 readState f = do
   let h = handle f
   hSeek h AbsoluteSeek 0
@@ -39,27 +39,27 @@ readState f = do
   let r = parseMany wholeFile readLogEntry'
   return $! M.fromList (reverse r)
 
-readLogEntry' :: Get (Key, Value)
+readLogEntry' :: Get (Key, (Timestamp, Value))
 readLogEntry' = do
   _ <- remaining
   crc <- getWord32be --crc
-  _ <- getWord32be
+  ts <- getInt32
   keySize <- getWord32be
   vSize <- getWord32be
   key <- getByteString $ fromIntegral keySize
   value <- getByteString $ fromIntegral vSize
   checkValue value crc
-  return (key, value)
+  return (key, (ts, value))
 
-writeMergedContent :: LogFile -> M.HashMap Key Value -> IO (MergingLog, KeyDir)
+writeMergedContent :: LogFile -> M.HashMap Key (Int, Value) -> IO (MergingLog, KeyDir)
 writeMergedContent l ks = do
   newLog <- createMergedLog l
   r <- mapM (appendToLog' newLog) (M.toList ks)
   return (newLog, M.fromList r)
 
-appendToLog' :: MergingLog -> (Key, Value) -> IO (Key, ValueLocation)
-appendToLog' (MergingLog l _ h) (key, value) = do
-  loc <- writeValue l key value
+appendToLog' :: MergingLog -> (Key, (Timestamp, Value)) -> IO (Key, ValueLocation)
+appendToLog' (MergingLog l _ h) (key, (time, value)) = do
+  loc <- writeValueWithTimestamp l time key value
   writeHint h key loc
   return (key, loc)
 

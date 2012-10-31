@@ -8,7 +8,7 @@ data ValueLocation = ValueLocation {
       fileId :: FilePath
     , valueSize :: Int
     , valuePos :: Integer
-    , timestamp :: Integer
+    , timestamp :: Int
   } deriving (Eq, Show)
 
 type KeyDir = M.HashMap Key ValueLocation
@@ -28,7 +28,7 @@ data MergingLog = MergingLog {
   }
 
 instance Show LogFile where
-  show l = "(LogFile" ++  path l ++ ")"
+  show l = "(LogFile: " ++  path l ++ ")"
 
 instance Eq LogFile where
   l1 == l2 = path l1 == path l2
@@ -42,7 +42,7 @@ data HitcaskSettings = HitcaskSettings {
 data HitcaskLogs = HitcaskLogs {
     current :: CurrentLogFile
   , files :: M.HashMap FilePath LogFile
-  }
+  } deriving (Show)
 
 data Hitcask = Hitcask {
     keys :: TVar KeyDir
@@ -57,3 +57,4 @@ instance Show Hitcask where
 type Key = ByteString
 type Value = ByteString
 
+type Timestamp = Int

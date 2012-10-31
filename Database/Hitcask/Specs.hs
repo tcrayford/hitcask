@@ -16,8 +16,8 @@ main :: IO ()
 main = hspec $ do
   openingLogFileSpecs
   compactSpecs
-  --describe "quickCheck" $
-    --prop "it passes quickCheck postconditions" propCheckPostConditions
+  describe "quickCheck" $
+    prop "it passes quickCheck postconditions" propCheckPostConditions
   describe "hitcask" $ do
     describe "get and put" $ do
       it "returns the value set as the key" $ do
@@ -77,12 +77,12 @@ main = hspec $ do
     describe "compacting" $
       it "reads the same key after compaction" $ do
         db <- createEmptyWith "/tmp/hitcask/db11" (standardSettings { maxBytes = 1 })
-        put db "key" "value"
-        put db "key" "value"
+        put db "key" "v1"
+        put db "key" "v2"
         compact db
         v <- get db "key"
         close db
-        v @?= Just "value"
+        v @?= Just "v2"
 
     describe "listing keys" $
       it "lists the available keys" $ do
