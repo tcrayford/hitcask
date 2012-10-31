@@ -9,6 +9,7 @@ import Database.Hitcask.Logs
 import Control.Concurrent.STM
 import qualified Data.HashMap.Strict as M
 import System.IO
+import System.Directory
 import qualified Data.ByteString.Char8 as B
 import Data.Serialize.Get
 
@@ -17,6 +18,7 @@ compact db = do
   immutable <- allNonActive db
   merged <- mapM compactLogFile immutable
   replaceNonActive db merged
+  removeAlreadyMerged immutable
 
 allNonActive :: Hitcask -> IO [LogFile]
 allNonActive db = fmap nonActive . readTVarIO $ logs db
@@ -90,4 +92,10 @@ latestWrite :: ValueLocation -> ValueLocation -> ValueLocation
 latestWrite v1 v2
   | timestamp v1 > timestamp v2 = v1
   | otherwise = v2
+
+removeAlreadyMerged :: [LogFile] -> IO ()
+removeAlreadyMerged = mapM_ kill
+  where kill x = do
+          hClose $ handle x
+          removeFile $ path x
 
