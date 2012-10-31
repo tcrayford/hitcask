@@ -79,9 +79,9 @@ hintFileSpecs = describe "writing and restoring from hint files" $
     rotateLogFile db
     m <- createMergedLog (current c)
     _ <- appendToLog' m ("key", "value")
-    original <- restoreFromFile (current c)
+    original <- restoreFromLog (current c)
     close db
-    restored <- restoreFromHintFile (hintFile m)
+    restored <- loadHintFile (hintFile m)
     restored @?= original
 
 parsingRoundTripSpecs :: Spec

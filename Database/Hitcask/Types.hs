@@ -19,6 +19,7 @@ data LogFile = LogFile {
   }
 
 type HintFile = LogFile
+type MergedLog = LogFile
 
 data MergingLog = MergingLog {
     mergedLog :: LogFile

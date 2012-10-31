@@ -1,5 +1,6 @@
 module Database.Hitcask.Restore where
 import Database.Hitcask.Types
+import Database.Hitcask.Hint
 import Database.Hitcask.Parsing
 import qualified Data.HashMap.Strict as M
 import qualified Data.ByteString.Char8 as B
@@ -20,12 +21,15 @@ restoreFromLogDir dir = do
 
 restoreFromFile :: LogFile -> IO KeyDir
 restoreFromFile f = do
-  exists <- doesFileExist (path f ++ ".hint")
+  exists <- doesFileExist $ hintFilePathFor f
   if exists
     then restoreFromHintFile f
-    else do
-          r <- allKeys f
-          return $! M.fromList (reverse r)
+    else restoreFromLog f
+
+restoreFromLog :: LogFile -> IO KeyDir
+restoreFromLog f = do
+  r <- allKeys f
+  return $! M.fromList (reverse r)
 
 allKeys :: LogFile -> IO [(Key, ValueLocation)]
 allKeys f = do
@@ -51,8 +55,11 @@ checkValue v crc = when (crc32 v /= crc)
   (fail $ "value failed crc check: " ++ show v)
 
 
-restoreFromHintFile :: HintFile -> IO KeyDir
-restoreFromHintFile f = do
+restoreFromHintFile :: MergedLog -> IO KeyDir
+restoreFromHintFile m = hintFileFor m >>= loadHintFile
+
+loadHintFile :: HintFile -> IO KeyDir
+loadHintFile f = do
   let h = handle f
   wholeFile <- B.hGetContents h
   let r = parseMany wholeFile readLoc

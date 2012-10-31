@@ -16,8 +16,8 @@ main :: IO ()
 main = hspec $ do
   openingLogFileSpecs
   compactSpecs
-  describe "quickCheck" $
-    prop "it passes quickCheck postconditions" propCheckPostConditions
+  --describe "quickCheck" $
+    --prop "it passes quickCheck postconditions" propCheckPostConditions
   describe "hitcask" $ do
     describe "get and put" $ do
       it "returns the value set as the key" $ do

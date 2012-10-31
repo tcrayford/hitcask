@@ -11,7 +11,8 @@ import qualified Data.HashMap.Strict as M
 logFilesInDir :: FilePath -> IO [FilePath]
 logFilesInDir dir = do
   (matched, _) <- globDir [compile "*.hitcask.data"] dir
-  return $! byRecent (concat matched)
+  (merged, _) <- globDir [compile "*.hitcask.data.merged"] dir
+  return $! byRecent $ concat matched ++ concat merged
 
 byRecent :: [FilePath] -> [FilePath]
 byRecent = sortBy mostRecent
