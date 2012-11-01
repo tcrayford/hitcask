@@ -4,7 +4,7 @@ import Database.Hitcask.Logs
 import Database.Hitcask.Put
 import qualified Data.ByteString.Char8 as B
 import Data.Serialize.Put
-import System.IO(hFlush)
+import System.IO(hFlush, hClose)
 import System.FilePath
 
 writeHint :: HintFile -> Key -> ValueLocation -> IO ()
@@ -37,4 +37,7 @@ hintFilePathFor :: MergedLog -> FilePath
 hintFilePathFor l = root </> ts ++ ".hitcask.data.hint"
   where root = dropFileName $ path l
         ts = show $ getTimestamp $ path l
+
+closeHint :: HintFile -> IO ()
+closeHint = hClose . handle
 

@@ -29,7 +29,9 @@ nonActive l = remove (current l) (M.elems (files l))
 compactLogFile :: LogFile -> IO (MergingLog, KeyDir)
 compactLogFile l = do
   currentContent <- readState l
-  writeMergedContent l currentContent
+  x <- writeMergedContent l currentContent
+  closeHint l
+  return $! x
 
 readState :: LogFile -> IO (M.HashMap Key (Timestamp, Value))
 readState f = do
@@ -79,11 +81,21 @@ replaceNonActive :: Hitcask -> [(MergingLog, KeyDir)] -> IO ()
 replaceNonActive db s = atomically $ mapM_ (swapInLog db) s
 
 swapInLog :: Hitcask -> (MergingLog, KeyDir) -> STM ()
-swapInLog db (MergingLog l _ _, mergedKeys) = do
-  modifyTVar (logs db) $ \m ->
-    m { files = M.insert (path l) l (files m) }
+swapInLog db (l, mergedKeys) = do
+  modifyTVar (logs db) (addMergedLog l)
   modifyTVar (keys db) $ \m ->
     addMergedKeyDir m mergedKeys
+
+addMergedLog :: MergingLog -> HitcaskLogs -> HitcaskLogs
+addMergedLog newLog = removeMergedLog newLog . addNewLog newLog
+
+removeMergedLog :: MergingLog -> HitcaskLogs -> HitcaskLogs
+removeMergedLog l ls = ls { files = M.delete (originalFilePath l) (files ls) }
+
+addNewLog :: MergingLog -> HitcaskLogs -> HitcaskLogs
+addNewLog l ls = ls { files = M.insert (path $ mergedLog l)
+                                       (mergedLog l)
+                                       (files ls) }
 
 addMergedKeyDir :: KeyDir -> KeyDir -> KeyDir
 addMergedKeyDir = M.unionWith latestWrite

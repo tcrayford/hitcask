@@ -17,6 +17,7 @@ import Database.Hitcask.Logs
 import Database.Hitcask.Specs.Arbitrary
 import Database.Hitcask
 import qualified Data.HashMap.Strict as M
+import System.IO(stdin)
 
 compactSpecs :: Spec
 compactSpecs = do
@@ -25,7 +26,9 @@ compactSpecs = do
   replaceNonActiveSpecs
   addMergedKeyDirSpecs
   hintFileSpecs
+  addMergedLogSpecs
   parsingRoundTripSpecs
+
 
 allNonActiveSpecs :: Spec
 allNonActiveSpecs = describe "allNonActive" $ do
@@ -83,6 +86,20 @@ hintFileSpecs = describe "writing and restoring from hint files" $
     close db
     restored <- loadHintFile (hintFile m)
     restored @?= original
+
+addMergedLogSpecs :: Spec
+addMergedLogSpecs = describe "addMergedLog" $ do
+  it "removes the old log" $ do
+    let newLog = MergingLog (LogFile stdin "merged") "logfile" (LogFile stdin "hint")
+        ls     = HitcaskLogs (LogFile stdin "current") (M.fromList [("logfile", LogFile stdin "logfile")])
+    Nothing @?= M.lookup "logfile" (files (removeMergedLog newLog ls))
+
+  it "adds a new log" $ do
+    let newLog = MergingLog (LogFile stdin "merged") "logfile" (LogFile stdin "hint")
+        ls     = HitcaskLogs (LogFile stdin "current") (M.fromList [("logfile", LogFile stdin "logfile")])
+    Just (LogFile stdin "merged") @?= M.lookup "merged" (files (addNewLog newLog ls))
+
+
 
 parsingRoundTripSpecs :: Spec
 parsingRoundTripSpecs = describe "parsing a hint" $
