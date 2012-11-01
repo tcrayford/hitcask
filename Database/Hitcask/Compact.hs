@@ -79,9 +79,9 @@ replaceNonActive :: Hitcask -> [(MergingLog, KeyDir)] -> IO ()
 replaceNonActive db s = atomically $ mapM_ (swapInLog db) s
 
 swapInLog :: Hitcask -> (MergingLog, KeyDir) -> STM ()
-swapInLog db (MergingLog l original _, mergedKeys) = do
+swapInLog db (MergingLog l _ _, mergedKeys) = do
   modifyTVar (logs db) $ \m ->
-    m { files = M.insert original l (files m) }
+    m { files = M.insert (path l) l (files m) }
   modifyTVar (keys db) $ \m ->
     addMergedKeyDir m mergedKeys
 

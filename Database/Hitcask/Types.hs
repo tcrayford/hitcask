@@ -27,6 +27,9 @@ data MergingLog = MergingLog {
   , hintFile :: HintFile
   }
 
+instance Eq MergingLog where
+  a == b = mergedLog a == mergedLog b
+
 instance Show LogFile where
   show l = "(LogFile: " ++  path l ++ ")"
 

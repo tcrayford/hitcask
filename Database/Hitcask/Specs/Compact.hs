@@ -61,7 +61,7 @@ replaceNonActiveSpecs = describe "replaceNonActive" $
     l <- createMergedLog (current c)
     replaceNonActive db [(l, M.empty)]
     old <- allNonActive db
-    head old @?= mergedLog l
+    elem (mergedLog l) old @?= True
 
 addMergedKeyDirSpecs :: Spec
 addMergedKeyDirSpecs = describe "latestWrite" $
