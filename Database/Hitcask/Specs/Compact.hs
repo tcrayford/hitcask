@@ -3,7 +3,7 @@ module Database.Hitcask.Specs.Compact(compactSpecs) where
 import Test.Hspec.Monadic
 import Test.Hspec.QuickCheck
 import Test.Hspec.HUnit()
-import Test.HUnit
+import Test.HUnit hiding(path)
 import Data.Serialize.Get
 import Control.Concurrent.STM
 import Database.Hitcask.Types
@@ -60,8 +60,8 @@ replaceNonActiveSpecs = describe "replaceNonActive" $
     rotateLogFile db
     l <- createMergedLog (current c)
     replaceNonActive db [(l, M.empty)]
-    old <- allNonActive db
-    elem (mergedLog l) old @?= True
+    old <- fmap files . readTVarIO $ logs db
+    Just (mergedLog l) @?= M.lookup (path $ mergedLog l) old
 
 addMergedKeyDirSpecs :: Spec
 addMergedKeyDirSpecs = describe "latestWrite" $
