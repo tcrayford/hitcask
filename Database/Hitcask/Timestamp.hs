@@ -1,11 +1,9 @@
 module Database.Hitcask.Timestamp where
-import System.Time
+import Data.Time.Clock.POSIX
+import Data.List.Split(splitOn)
 
-secondsToPicoseconds :: Integer -> Integer
-secondsToPicoseconds s = s * (10 ^ 12)
-
-currentTimestamp :: IO Int
+currentTimestamp :: IO Integer
 currentTimestamp = do
-  (TOD s p) <- getClockTime
-  let time = secondsToPicoseconds s + p
-  return $! fromIntegral time
+  a <- getPOSIXTime
+  return $! read (head (splitOn "s" (concat (splitOn "." (show a)))))
+

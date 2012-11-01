@@ -21,7 +21,7 @@ put h key value = do
 
 writeValue :: LogFile -> Key -> Value -> IO ValueLocation
 writeValue l key value = do
-  time <- currentTimestamp
+  time <- fmap fromIntegral currentTimestamp
   writeValueWithTimestamp l time key value
 
 writeValueWithTimestamp :: LogFile -> Timestamp -> Key -> Value -> IO ValueLocation
