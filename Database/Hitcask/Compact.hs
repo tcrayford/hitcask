@@ -29,9 +29,7 @@ nonActive l = remove (current l) (M.elems (files l))
 compactLogFile :: LogFile -> IO (MergingLog, KeyDir)
 compactLogFile l = do
   currentContent <- readState l
-  x <- writeMergedContent l currentContent
-  closeHint l
-  return $! x
+  writeMergedContent l currentContent
 
 readState :: LogFile -> IO (M.HashMap Key (Timestamp, Value))
 readState f = do
@@ -57,6 +55,7 @@ writeMergedContent :: LogFile -> M.HashMap Key (Int, Value) -> IO (MergingLog, K
 writeMergedContent l ks = do
   newLog <- createMergedLog l
   r <- mapM (appendToLog' newLog) (M.toList ks)
+  closeHint (hintFile newLog)
   return (newLog, M.fromList r)
 
 appendToLog' :: MergingLog -> (Key, (Timestamp, Value)) -> IO (Key, ValueLocation)
