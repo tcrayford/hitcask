@@ -104,6 +104,8 @@ openingLogFileSpecs = describe "getTimestamp" $ do
     head (byRecent ["12345.hitcask.data", "0.hitcask.data"]) @?= "12345.hitcask.data"
 
 
+-- an bug: reopening files
+-- an bug: merging doesn't always work
 -- duplication between reading log files?
 -- producing hint files
 -- using hint files on startup
