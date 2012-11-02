@@ -3,6 +3,7 @@ import Test.Hspec.Monadic
 import Test.Hspec.HUnit()
 import Test.HUnit
 import Database.Hitcask
+import Database.Hitcask.Rotation
 import Database.Hitcask.Types
 import Database.Hitcask.Get
 import Database.Hitcask.Logs
@@ -74,7 +75,7 @@ main = hspec $ do
         close db
         n @?= Nothing
 
-    describe "compacting" $
+    describe "compacting" $ do
       it "reads the same key after compaction" $ do
         db <- createEmptyWith "/tmp/hitcask/db11" (standardSettings { maxBytes = 1 })
         put db "key" "v1"
@@ -83,6 +84,18 @@ main = hspec $ do
         v <- get db "key"
         close db
         v @?= Just "v2"
+
+      it "doesn't lock files upon compaction and closing" $ do
+        db <- createEmpty "/tmp/hitcask/db13"
+        put db "key" "value"
+        rotateLogFile db
+        compact db
+        close db
+        db2 <- connect "/tmp/hitcask/db13"
+        v <- get db "key"
+        close db2
+        v @?= Just "value"
+
 
     describe "listing keys" $
       it "lists the available keys" $ do
