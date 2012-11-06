@@ -9,6 +9,7 @@ import Control.Monad
 import Test.QuickCheck.Monadic
 import Test.QuickCheck
 import Data.Maybe
+import Data.List(foldl')
 import Debug.Trace
 
 instance Arbitrary HitcaskAction where
@@ -47,7 +48,13 @@ propCheckPostConditions (HitcaskFilePath fp, MaxBytes b) actions = monadicIO $ d
 type PostConditions = M.HashMap Key HitcaskPostCondition
 
 postConditionsFromActions :: [HitcaskAction] -> PostConditions
-postConditionsFromActions = M.fromList . concatMap postcondition
+postConditionsFromActions = foldl' runActionInMemory M.empty
+
+runActionInMemory :: PostConditions -> HitcaskAction -> PostConditions
+runActionInMemory m (Put k v) = M.insert k (KeyHasValue k v) m
+runActionInMemory m (Delete k) = M.insert k (KeyIsEmpty k) m
+runActionInMemory m Merge = m
+runActionInMemory m CloseAndReopen = m
 
 postcondition :: HitcaskAction -> [(Key, HitcaskPostCondition)]
 postcondition (Put k v) = [(k, KeyHasValue k v)]
@@ -82,7 +89,7 @@ checkWithGoodError :: Hitcask -> HitcaskPostCondition -> IO Bool
 checkWithGoodError db c = do
   s <- checkCondition db c
   unless s $
-    trace (show c ++ "\n") $ return ()
+    trace ("FAILED: " ++ show c ++ "\n") $ return ()
   return s
 
 instance Show HitcaskFilePath where
