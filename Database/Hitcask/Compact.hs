@@ -2,7 +2,6 @@ module Database.Hitcask.Compact where
 import Database.Hitcask.Types
 import Database.Hitcask.Restore
 import Database.Hitcask.Parsing
-import Database.Hitcask.Util
 import Database.Hitcask.Put
 import Database.Hitcask.Hint
 import Database.Hitcask.Logs
@@ -24,7 +23,7 @@ allNonActive :: Hitcask -> IO [LogFile]
 allNonActive db = fmap nonActive . readTVarIO $ logs db
 
 nonActive :: HitcaskLogs -> [LogFile]
-nonActive l = remove (current l) (M.elems (files l))
+nonActive l = filter (not . isMerged . path) . M.elems $ M.delete (path $ current l) (files l)
 
 compactLogFile :: LogFile -> IO (MergingLog, KeyDir)
 compactLogFile l = do

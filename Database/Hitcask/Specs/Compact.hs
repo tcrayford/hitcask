@@ -45,6 +45,10 @@ allNonActiveSpecs = describe "allNonActive" $ do
     old <- allNonActive db
     elem a old @?= True
 
+  it "doesn't contain merged log files" $
+    nonActive (HitcaskLogs (LogFile stdin "current") (M.fromList [("/tmp/foo/1234.hitcask.data.merged", LogFile stdin "/tmp/foo/1234.hitcask.data.merged")])) @?= []
+
+
 compactLogFileSpecs :: Spec
 compactLogFileSpecs = describe "compactLogFile" $
   it "produces a new log file with no duplicate keys" $ do
