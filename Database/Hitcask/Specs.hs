@@ -96,7 +96,6 @@ main = hspec $ do
         close db2
         v @?= Just "value"
 
-
     describe "listing keys" $
       it "lists the available keys" $ do
         db <- createEmpty "/tmp/hitcask/db12"
@@ -117,7 +116,6 @@ openingLogFileSpecs = describe "getTimestamp" $ do
     head (byRecent ["12345.hitcask.data", "0.hitcask.data"]) @?= "12345.hitcask.data"
 
 
--- an bug: reopening files
 -- an bug: merging doesn't always work
 -- duplication between reading log files?
 -- producing hint files
