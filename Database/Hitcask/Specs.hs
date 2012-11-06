@@ -92,7 +92,7 @@ main = hspec $ do
         compact db
         close db
         db2 <- connect "/tmp/hitcask/db13"
-        v <- get db "key"
+        v <- get db2 "key"
         close db2
         v @?= Just "value"
 
