@@ -23,7 +23,7 @@ restoreFromFile :: LogFile -> IO KeyDir
 restoreFromFile f = do
   exists <- doesFileExist $ hintFilePathFor f
   if exists
-    then restoreFromHintFile f
+    then restoreFromMergedLog f
     else restoreFromLog f
 
 restoreFromLog :: LogFile -> IO KeyDir
@@ -54,9 +54,13 @@ checkValue :: (Monad m) => Value -> Word32 -> m ()
 checkValue v crc = when (crc32 v /= crc)
   (fail $ "value failed crc check: " ++ show v)
 
-
-restoreFromHintFile :: MergedLog -> IO KeyDir
-restoreFromHintFile m = hintFileFor m >>= loadHintFile
+restoreFromMergedLog :: MergedLog -> IO KeyDir
+restoreFromMergedLog m = do
+  h <- hintFileFor m
+  res <- loadHintFile h
+  closeLog h
+  closeLog m
+  return $! res
 
 loadHintFile :: HintFile -> IO KeyDir
 loadHintFile f = do
