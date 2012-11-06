@@ -9,6 +9,7 @@ import Control.Monad
 import Test.QuickCheck.Monadic
 import Test.QuickCheck
 import Data.Maybe
+import Debug.Trace
 
 instance Arbitrary HitcaskAction where
   arbitrary = do
@@ -74,8 +75,15 @@ runAction db CloseAndReopen = do
 checkPostConditions :: Hitcask -> PostConditions -> PropertyM IO ()
 checkPostConditions db ps = do
   let ks = M.elems ps
-  checked <- run $ mapM (checkCondition db) ks
+  checked <- run $ mapM (checkWithGoodError db) ks
   assert $ and checked
+
+checkWithGoodError :: Hitcask -> HitcaskPostCondition -> IO Bool
+checkWithGoodError db c = do
+  s <- checkCondition db c
+  unless s $
+    trace (show c ++ "\n") $ return ()
+  return s
 
 instance Show HitcaskFilePath where
   show (HitcaskFilePath fp) = fp
