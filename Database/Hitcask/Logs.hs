@@ -7,6 +7,7 @@ import Data.Ord(comparing)
 import System.IO
 import Database.Hitcask.Timestamp
 import qualified Data.HashMap.Strict as M
+import System.FilePath
 
 logFilesInDir :: FilePath -> IO [FilePath]
 logFilesInDir dir = do
@@ -49,3 +50,7 @@ flushLog = hFlush . handle
 
 closeLog :: LogFile -> IO ()
 closeLog = hClose . handle
+
+isMerged :: FilePath -> Bool
+isMerged l = show (getTimestamp l) ++ ".hitcask.data.merged" == takeFileName l
+

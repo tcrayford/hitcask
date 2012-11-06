@@ -108,12 +108,20 @@ readAllVals :: Hitcask -> [(Key, ValueLocation)] -> IO [Maybe Value]
 readAllVals db = mapM (\(k,v) -> readFromLocation db v k) . reverse
 
 openingLogFileSpecs :: Spec
-openingLogFileSpecs = describe "getTimestamp" $ do
-  it "gets the timestamp from a hitcask filename" $
-    12345678 @?= getTimestamp "12345678.hitcask.data"
+openingLogFileSpecs = describe "logs" $ do
+  describe "getTimestamp" $ do
+    it "gets the timestamp from a hitcask filename" $
+      12345678 @?= getTimestamp "12345678.hitcask.data"
 
-  it "the largest timestamp comes first" $
-    head (byRecent ["12345.hitcask.data", "0.hitcask.data"]) @?= "12345.hitcask.data"
+    it "the largest timestamp comes first" $
+      head (byRecent ["12345.hitcask.data", "0.hitcask.data"]) @?= "12345.hitcask.data"
+
+  describe "isMerged" $ do
+    it "is merged if the file ends with .merged" $
+      isMerged "/tmp/foo/1234123.hitcask.data.merged" @?= True
+
+    it "normal log files are not merged" $
+      isMerged "/tmp/foo/1234123.hitcask.data" @?= False
 
 
 -- an bug: merging doesn't always work
